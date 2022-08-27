@@ -1,0 +1,70 @@
+\documentclass[12pt]{article}
+\usepackage[a4paper, margin=1.5in]{geometry}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage[parfill]{parskip}
+
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\let\openbox\relax
+\usepackage{amsthm}
+
+% For moving the title up
+\usepackage{titling}
+\setlength{\droptitle}{-4em}
+\usepackage{mystyles}
+\usepackage{mymacros}
+
+\usepackage{float}
+\usepackage{newfloat}
+\usepackage{caption}
+\usepackage{chngcntr}
+\usepackage{tikz}
+\usepackage{stmaryrd}
+
+\captionsetup{labelfont=bf, justification=raggedright, singlelinecheck=false}
+\counterwithin{figure}{section}
+\DeclareCaptionType[fileext=los,placement=H]{protocol}
+\counterwithin{protocol}{section}
+\DeclareCaptionType[fileext=los,placement=H]{functionality}
+\counterwithin{functionality}{section}
+
+\newenvironment{afigure}[2]
+    {
+    \begin{figure}[H]
+    \begin{mdframed}[align=left]
+    \caption{\label{#1} \textbf{#2}}
+    }
+    {
+    \end{mdframed}
+    \end{figure}
+    }
+
+\newenvironment{aprotocol}[2]
+    {
+    \begin{protocol}
+    \begin{mdframed}[align=left]
+    \caption{\label{#1} \textbf{#2}}
+    }
+    {
+    \end{mdframed}
+    \end{protocol}
+    }
+
+\newenvironment{afunctionality}[2]
+    {
+    \begin{functionality}
+    \begin{mdframed}[align=left]
+    \caption{\label{#1} \textbf{#2}}
+    }
+    {
+    \end{mdframed}
+    \end{functionality}
+    }
+
+\DeclareFloatingEnvironment[
+    fileext=los,
+    listname={List of Games},
+    name=Game,
+    placement=H,
+]{game}

@@ -1,0 +1,66 @@
+\include{preamble.tex}
+
+\date{\today}
+\title{On Security Against Time Traveling Adversaries}
+\author{Lúcás Críostóir Meier\\\texttt{lucas@cronokirby.com}}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+    \noindent In this work, we investigate the notion of
+    time travel, formally defining a model for adversaries
+    equipped with a time machine, and the subsequent consequences
+    on common cryptographic schemes.
+\end{abstract}
+
+\section{Introduction}
+
+\cite{maurer_unifying_2009}
+
+\section{Defining Abstract Games}
+
+\begin{game}
+\captionsetup{justification=centering}
+$$
+\boxed{
+\begin{aligned}
+&\colorbox{pink}{\large $G_b(\text{init}, \text{next})$}\cr
+\cr
+&s \gets \text{init}()\cr
+&\cr
+&\underline{\mathcal{O}(x):}\cr
+&\ s, y \gets \text{next}(b, s, x)\cr
+&\ \texttt{return } y
+\end{aligned}
+}
+$$
+\caption{$G_b(\text{init}, \text{next})$}
+\end{game}
+
+\section{Models of Time Travel}
+
+\subsection{Rewinding Models}
+
+\subsection{Forking Models}
+
+\subsection{Summary}
+
+\section{On Depth and Position Restrictions}
+
+\section{Effects of Time Travel on Common Schemes}
+
+\subsection{Stateless Schemes Remain Secure}
+
+\subsection{On Encryption}
+
+\subsection{On Signatures}
+
+\section{Further Work}
+
+\section{Conclusion}
+
+\bibliographystyle{alpha}
+\small \bibliography{bib}
+\end{document}
