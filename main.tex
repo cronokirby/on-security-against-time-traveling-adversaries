@@ -134,9 +134,7 @@ $$
 \boxed{
 \begin{aligned}
 &\colorbox{pink}{\large $\mathcal{G}(\texttt{init}, \texttt{next})$}\cr
-\cr
 &s \gets \texttt{init}()\cr
-&\cr
 &\underline{\mathcal{O}(x):}\cr
 &\ s, y \gets \texttt{next}(s, x)\cr
 &\ \texttt{return } y
@@ -193,6 +191,125 @@ in order to partially undo an interaction, so we can make the simplifying
 assumption that all interactions are \emph{atomic}, and time is discrete.
 
 \subsection{Rewinding Models}
+
+The first model of time travel we consider is that of \emph{rewinding}.
+We start by giving the adversary the ability to travel backwards
+by exactly one time step.
+
+We model this as a \emph{transformation} between games.
+Given an abstract game $\mathcal{G}_b$, we define the game
+$\text{Rewind-1}(\mathcal{G}_b)$ as follows:
+
+\begin{game}
+\captionsetup{justification=centering}
+$$
+\boxed{
+\begin{aligned}
+&\colorbox{pink}{\large $\text{Rewind-1}(\mathcal{G}_b)$}\cr
+&s_0 \gets \texttt{init}()\cr
+&i \gets 0\cr
+&\begin{aligned}
+    &\underline{\mathcal{O}(x):}\cr
+    &s_{i + 1}, y \gets \texttt{next}(s_i, x)\cr
+    &\texttt{return } y\cr
+\end{aligned}
+&\begin{aligned}
+    &\underline{\texttt{Rewind}():}\cr
+    &\texttt{assert } i > 0\cr
+    &i \gets i - 1\cr
+\end{aligned}\cr
+\end{aligned}
+}
+$$
+\caption{$\text{Rewind-1}(\mathcal{G}_b)$}
+\end{game}
+
+The interface is the same as that of $\mathcal{G}_b$, except that
+we now have an additional exported function: $\texttt{Rewind}$.
+Apart from this function, the behavior of the game is the same.
+Each interaction with $\mathcal{O}$ advances the state.
+The difference is only in the internal implementation.
+Instead of a single state $s$, we now have a sequence of states
+$s_0, s_1, \ldots$, as well as a position in this sequence, $i$.
+
+The $\texttt{Rewind}$ function is the additional capability here,
+and allows the adversary to move backwards by one step in time.
+This essentially models a very limited time machine, only
+allowing a small backwards movement in time.
+
+Our first question is: does this limited model of time travel help
+the adversary?
+In other words, is an adversary with this capability more powerful
+than adversary without it? 
+One way of capturing this notion of power would be to demonstrate
+a game $\mathcal{E}_b$ which is \emph{secure}, but where
+$\text{Rewind-1}(\mathcal{E}_b)$ is broken.
+In fact, we can do this:
+
+\begin{claim}
+    \label{claim:rewind-1-is-stronger}
+    There exists a game $\mathcal{E}_b$ and adversary $\mathcal{A}$ such that 
+    $\mathcal{E}_b$ is secure, yet $\epsilon(\mathcal{A} \circ \text{Rewind-1}(\mathcal{E}_b)) = 1$.
+\end{claim}
+
+Consider the following game:
+
+\begin{game}
+\captionsetup{justification=centering}
+$$
+\boxed{
+\begin{aligned}
+&\colorbox{pink}{\large $\mathcal{E}_b$}\cr
+&k_0, k_1 \xleftarrow{R} \{0, 1\}^\lambda\cr
+&\text{queried} \gets 0\cr
+&\begin{aligned}
+    &\underline{\texttt{Query}(\sigma):}\cr
+    &\texttt{assert } \text{queried} = 0\cr
+    &\text{queried} \gets 1\cr
+    &\texttt{return } k_\sigma\cr
+\end{aligned}
+&\begin{aligned}
+    &\underline{\texttt{Guess}(\hat{k}_0, \hat{k}_1):}\cr
+    &\texttt{assert } \hat{k}_0 = k_0 \land \hat{k}_1 = k_1\cr
+    &\texttt{return } b\cr
+    &\cr
+\end{aligned}\cr
+\end{aligned}
+}
+$$
+\end{game}
+
+In this game, we have two random keys $k_0, k_1$.
+The game lets the adversary choose to learn one of the keys, but not
+the other.
+If the adversary manages to guess both of the keys, then they'll be
+able to learn the value of $b$.
+
+Now, because $k_\sigma$ has $\lambda$ bits, an adversary won't be able
+to randomly guess its value.
+This means that if the adversary only knows one of the keys, they won't
+be able to pass the assertion except with negligeable probability.
+This means that $\mathcal{E}_b$ is secure.
+
+On the other hand, $\text{Rewind-1}(\mathcal{E}_b)$ is already broken.
+The following strategy will always succeed:
+
+$$
+\begin{aligned}
+&k_0 \gets \texttt{Query}(0)\cr
+&\texttt{Rewind}()\cr
+&k_1 \gets \texttt{Query}(1)\cr
+&b \gets \texttt{Guess}(k_0, k_1)\cr
+&\texttt{return } b\cr
+\end{aligned}
+$$
+
+Even though the adversary prevents us from querying more than once,
+a single rewinding step is enough to undo our query, and thus learn
+the other key.
+
+$\blacksquare$
+
 
 \subsection{Forking Models}
 
