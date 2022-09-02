@@ -192,7 +192,11 @@ assumption that all interactions are \emph{atomic}, and time is discrete.
 
 \subsection{Rewinding Models}
 
-The first model of time travel we consider is that of \emph{rewinding}.
+The first model of time travel we consider is that of \emph{rewinding},
+in which the adversary is allowed to travel backwards in time.
+
+\subsubsection{Single Rewinds}
+
 We start by giving the adversary the ability to travel backwards
 by exactly one time step.
 
@@ -309,6 +313,88 @@ a single rewinding step is enough to undo our query, and thus learn
 the other key.
 
 $\blacksquare$
+
+\subsubsection{Multiple Rewinds}
+
+Next, we consider the ability to travel backwards by multiple steps
+at once.
+Like before, we model this with another transformation:
+$\text{Rewind-Many}$.
+
+\begin{game}
+\captionsetup{justification=centering}
+$$
+\boxed{
+\begin{aligned}
+&\colorbox{pink}{\large $\text{Rewind-Many}(\mathcal{G}_b)$}\cr
+&s_0 \gets \texttt{init}()\cr
+&i \gets 0\cr
+&\begin{aligned}
+    &\underline{\mathcal{O}(x):}\cr
+    &s_{i + 1}, y \gets \texttt{next}(s_i, x)\cr
+    &\texttt{return } y\cr
+\end{aligned}
+&\begin{aligned}
+    &\underline{\texttt{Rewind}(j):}\cr
+    &\texttt{assert } i >= j\cr
+    &i \gets i - j\cr
+\end{aligned}\cr
+\end{aligned}
+}
+$$
+\caption{$\text{Rewind-Many}(\mathcal{G}_b)$}
+\end{game}
+
+The only difference with $\text{Rewind-1}$ is that now the adversary
+can specify a hop distance $j$, and move backwards by $j$ steps,
+rather than by just a single step.
+
+A natural question arises: is being able to jump backwards multiple
+steps at a time more powerful?
+
+No.
+
+\begin{claim}
+    \label{claim:rewind-many-is-not-strong}
+    $\text{Rewind-Many}$ is as strong as $\text{Rewind-1}$.
+    In particular, for any abstract game $\mathcal{G}_b$, we have
+    $\text{Rewind-Many}(\mathcal{G}_b) \leq \text{Rewind-1}(\mathcal{G}_b)$.
+\end{claim}
+
+The reduction works by emulating a large jump with many tiny jumps.
+
+$$
+\text{Rewind-Many}(\mathcal{G}_b) =
+\boxed{
+\begin{aligned}
+&\colorbox{pink}{\large $\Gamma$}\cr
+&\begin{aligned}
+    &\underline{\mathcal{O}(x):}\cr
+    &\texttt{return } \texttt{super}.\mathcal{O}(x)\cr
+\end{aligned}
+&\begin{aligned}
+    &\underline{\texttt{Rewind}(j):}\cr
+    &\texttt{assert } i >= j\cr
+    &\texttt{super}.\texttt{Rewind}()\ j \text{ times }\cr
+\end{aligned}\cr
+\end{aligned}
+}
+\ \circ\ 
+\text{Rewind-1}(\mathcal{G}_b)
+$$
+
+The only subtlety is that we need to guarantee that this emulation
+is efficient, i.e. polynomial in $\lambda$.
+Because the adversary for $\mathcal{A}$ against $\text{Rewind-Many}(\mathcal{G}_b)$
+is efficient, we know that they make a number of queries to $\mathcal{O}$ polynomial
+in $\lambda$.
+This means that the largest $i$ they reach is also bounded, and thus so will the largest
+$j$ they query.
+This means that the number of iterations we do in the emulation is also bounded by a polynomial
+in $\lambda$, so the reduction is efficient.
+
+$\blacksquare$
+
 
 
 \subsection{Forking Models}
