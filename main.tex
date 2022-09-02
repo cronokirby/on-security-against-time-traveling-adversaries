@@ -83,27 +83,65 @@ Given we a pair of games $G_0, G_1$, we say that they are:
 \end{itemize}
 
 The security of a cryptographic scheme is defined by a pair of games $G_b$.
-We say that the scheme is secure if $G_0 \approx G_1$.
+We say that the scheme is \emph{secure} if $G_0 \approx G_1$.
 
 \subsection{Abstract Games}
+
+In the formalism of state-separable proofs, each game can have a different interface,
+and maintain a different kind of state.
+This is very useful, since it allows us to capture various cryptographic schemes
+and notions of security.
+However, in order to easily model the impacts of time travel on various games,
+we would rather work with a \emph{single} interface, capable of capturing the behavior
+of various games and their notions of security.
+
+The key observation here is that the state of a pair of game is modified in only two places:
+
+\begin{enumerate}
+    \item When the state is initialized.
+    \item When an exported function is called.
+\end{enumerate}
+
+We can also collapse all of the exported functions into a single function,
+by including additional information in the input.
+For example, the input can include which sub-function is being called,
+along with the arguments to that sub-function.
+
+The data we need to describe a game thus consist of a set of states
+$\Sigma$, an initialization function $\texttt{init} : () \xrightarrow{R} \Sigma$,
+as well as input and output types $X$ and $Y$, along with
+a transition function ${\texttt{next} : X \times \Sigma \to Y \times \Sigma}$.
+
+Together, these data define the following game:
 
 \begin{game}
 \captionsetup{justification=centering}
 $$
 \boxed{
 \begin{aligned}
-&\colorbox{pink}{\large $G_b(\text{init}, \text{next})$}\cr
+&\colorbox{pink}{\large $\mathcal{G}(\texttt{init}, \texttt{next})$}\cr
 \cr
-&s \gets \text{init}()\cr
+&s \gets \texttt{init}()\cr
 &\cr
 &\underline{\mathcal{O}(x):}\cr
-&\ s, y \gets \text{next}(b, s, x)\cr
+&\ s, y \gets \texttt{next}(s, x)\cr
 &\ \texttt{return } y
 \end{aligned}
 }
 $$
-\caption{$G_b(\text{init}, \text{next})$}
+\caption{$\mathcal{G}(\texttt{init}, \texttt{next})$}
 \end{game}
+
+Intuitively, the game uses $\texttt{init}$ to randomly initialize the state, and
+then each subsequent oracle call triggers some kind of randomized calculation
+which modifies the state, and produces an output.
+
+We can also implicitly parameterize the types and functions with a bit $b$,
+allowing us to define the game pair $\mathcal{G}_b(\texttt{init}, \texttt{next})$,
+which is shorthand for $\mathcal{G}(\texttt{init}_b, \texttt{next}_b)$.
+
+This abstract game is simple, but still expressive enough to capture any
+kind of game expressable in the state-separable formalism.
 
 \section{Models of Time Travel}
 
