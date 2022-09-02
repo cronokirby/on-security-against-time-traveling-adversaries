@@ -210,11 +210,11 @@ $$
 \boxed{
 \begin{aligned}
 &\colorbox{pink}{\large $\text{Rewind-1}(\mathcal{G}_b)$}\cr
-&s_0 \gets \texttt{init}()\cr
+&s_0 \gets \texttt{init}_b()\cr
 &i \gets 0\cr
 &\begin{aligned}
     &\underline{\mathcal{O}(x):}\cr
-    &s_{i + 1}, y \gets \texttt{next}(s_i, x)\cr
+    &s_{i + 1}, y \gets \texttt{next}_b(s_i, x)\cr
     &\texttt{return } y\cr
 \end{aligned}
 &\begin{aligned}
@@ -327,11 +327,11 @@ $$
 \boxed{
 \begin{aligned}
 &\colorbox{pink}{\large $\text{Rewind-Many}(\mathcal{G}_b)$}\cr
-&s_0 \gets \texttt{init}()\cr
+&s_0 \gets \texttt{init}_b()\cr
 &i \gets 0\cr
 &\begin{aligned}
     &\underline{\mathcal{O}(x):}\cr
-    &s_{i + 1}, y \gets \texttt{next}(s_i, x)\cr
+    &s_{i + 1}, y \gets \texttt{next}_b(s_i, x)\cr
     &\texttt{return } y\cr
 \end{aligned}
 &\begin{aligned}
@@ -363,8 +363,9 @@ No.
 
 The reduction works by emulating a large jump with many tiny jumps.
 
+We define a wrapper $\Gamma$:
+
 $$
-\text{Rewind-Many}(\mathcal{G}_b) =
 \boxed{
 \begin{aligned}
 &\colorbox{pink}{\large $\Gamma$}\cr
@@ -379,8 +380,11 @@ $$
 \end{aligned}\cr
 \end{aligned}
 }
-\ \circ\ 
-\text{Rewind-1}(\mathcal{G}_b)
+$$
+
+It then holds that:
+$$
+\text{Rewind-Many}(\mathcal{G}_b) = \Gamma \circ \text{Rewind-1}(\mathcal{G}_b)
 $$
 
 The only subtlety is that we need to guarantee that this emulation
@@ -395,9 +399,178 @@ in $\lambda$, so the reduction is efficient.
 
 $\blacksquare$
 
-
-
 \subsection{Forking Models}
+
+So far, we've considered a simple model of time travel in which the
+adversary observes a linear sequence of states, but they're allowed to
+rewind time, undoing the most recent states.
+
+\todo{figure?}
+
+One shortcoming of this model is that the adversary has no ability to
+return to previously seen states.
+For example, after reaching a state $s$, an adversary can move backwards
+in time, but then loses the ability to move back to the state $s$.
+
+While they can travel backwards in time, they can't travel \emph{forwards}
+at will.
+
+In this section, we augment the adversary with the ability to travel both
+forwards and backwards and time.
+To do so, we consider a model in which the adversary is allowed
+to \emph{fork} the timeline, and then travel between these parallel timelines.
+Instead of having a linear sequence of states, we now have a tree:
+
+\todo{figure?}
+
+To model this technically, we introduce the notion of \emph{savepoints}.
+By creating a savepoint at particular point in time, an adversary is
+able to return to the state of the game at that point in time.
+Each savepoint is thus a junction point in the tree.
+By returning back to a savepoint, the adversary creates a new branch
+at that junction:
+
+\todo{figure}
+
+\subsubsection{A Stack of Savepoints}
+
+In the first model we consider, an adversary is free to create savepoints
+anywhere, but can only jump to the most recently created savepoint.
+We denote this capability by $\text{Fork-Stack}$:
+
+\begin{game}
+\captionsetup{justification=centering}
+$$
+\boxed{
+\begin{aligned}
+&\colorbox{pink}{\large $\text{Fork-Stack}(\mathcal{G}_b)$}\cr
+&\begin{aligned}
+    &s \gets \texttt{init}_b()\cr
+    &\text{stack} \gets \varepsilon\cr
+    &\underline{\mathcal{O}(x):}\cr
+    &\ s, y \gets \texttt{next}_b(s, x)\cr
+    &\ \texttt{return } y\cr
+\end{aligned}
+&\begin{aligned}
+    &\underline{\texttt{Fork}():}\cr
+    &\ \text{stack}.\text{push}(s)\cr
+    &\underline{\texttt{Load}():}\cr
+    &\ \texttt{assert } \neg \text{stack}.\text{empty}\cr
+    &\ s \gets \text{stack}.\text{pop}()\cr
+\end{aligned}\cr
+\end{aligned}
+}
+$$
+\caption{$\text{Rewind-Many}(\mathcal{G}_b)$}
+\end{game}
+
+We maintain a stack of savepoints, which are just snapshots of the state
+of the game, but we can only reload the most recent savepoint, consuming
+it.
+The adversary also needs to proactively create savepoints if they want to be able
+to rewind time.
+
+How does $\text{Fork-Stack}$ compare with $\text{Rewind-Many}$?
+
+It turns out that they're equivalent.
+
+\begin{claim}
+    \label{claim:fork-stack-is-not-stronger}
+    For all abstract games $\mathcal{G}_b$, we have both
+    $\text{Fork-Stack}(\mathcal{G}_b) \leq \text{Rewind-Many}(\mathcal{G}_b)$
+    and $\text{Rewind-Many}(\mathcal{G}_b) \leq \text{Fork-Stack}(\mathcal{G}_b)$.
+\end{claim}
+
+\textbf{Proof Idea:}\\
+Because we can only load the most recent savepoint, we can emulate
+these loads using rewinding.
+
+In the other direction, we need to emulate rewinding with forking.
+One tricky aspect is that an adversary can rewind to any point without
+having to create a savepoint there in advance.
+In particular, they can choose how they rewind based on the results
+of interacting with the game.
+To accomodate this freedom, we can simply always make a savepoint,
+allowing us to rewind by loading multiples times in a row.
+
+\textbf{Proof:}\\
+First, we show that $\text{Fork-Stack}(\mathcal{G}_b) \leq \text{Rewind-Many}(\mathcal{G}_b)$.
+
+We define a wrapper $\Gamma$:
+
+$$
+\boxed{
+\begin{aligned}
+&\colorbox{pink}{\large $\Gamma$}\cr
+&\begin{aligned}
+    &i \gets 0\cr
+    &\text{stack} \gets \varepsilon\cr
+    &\cr
+    &\underline{\mathcal{O}(x):}\cr
+    &\ i \gets i + 1\cr
+    &\ \texttt{return } \texttt{super}.\mathcal{O}(x)\cr
+\end{aligned}
+&\begin{aligned}
+    &\underline{\texttt{Fork}():}\cr
+    &\ \text{stack}.\text{push}(i)\cr
+    &\underline{\texttt{Load}():}\cr
+    &\ \texttt{assert } \neg \text{stack}.\text{empty}\cr
+    &\ \hat{i} \gets \text{stack}.\text{pop}()\cr
+    &\ \texttt{super}.\texttt{Rewind}(i - \hat{i})\cr
+    &\ i \gets \hat{i}\cr
+\end{aligned}\cr
+\end{aligned}
+}
+$$
+
+This wrapper satisfies:
+$$
+\text{Fork-Stack}(\mathcal{G}_b) = \Gamma \circ \text{Rewind-Many}(\mathcal{G}_b)
+$$
+Basically, instead of keeping a stack of states, we can keep a stack of indices,
+and the rewinding is enough to load previous states, because we can only ever load
+the most recent state on the stack.
+
+Next, we show that $\text{Rewind-Many}(\mathcal{G}_b) \leq \text{Rewind-Many}(\mathcal{G}_b)$.
+
+In Claim \ref{claim:rewind-many-is-not-strong}, we showed that
+$\text{Rewind-Many}(\mathcal{G}_b) \leq \text{Rewind-1}(\mathcal{G}_b)$, so
+it suffices to prove that $\text{Rewind-1}(\mathcal{G}_b) \leq \text{Fork-Stack}(\mathcal{G}_b)$.
+
+We define a wrapper $\Gamma$, which works by always creating a savepoint,
+and then using those to implement rewinding.
+
+$$
+\boxed{
+\begin{aligned}
+&\colorbox{pink}{\large $\Gamma$}\cr
+&\begin{aligned}
+    &\underline{\mathcal{O}(x):}\cr
+    &\ \texttt{super}.\texttt{Fork}()\cr
+    &\ \texttt{return } \texttt{super}.\mathcal{O}(x)\cr
+\end{aligned}
+&\begin{aligned}
+    &\underline{\texttt{Rewind}():}\cr
+    &\ \texttt{super}.\texttt{Load}()\cr
+    &\cr
+\end{aligned}\cr
+\end{aligned}
+}
+$$
+
+We have:
+$$
+\text{Rewind-1}(\mathcal{G}_b) = \Gamma \circ \text{Fork-Stack}(\mathcal{G}_b)
+$$
+
+One subtlety is that in $\texttt{Rewind}$, we don't perform any assertions,
+whereas we'd usually check that $i > 0$.
+This isn't necessary because $\texttt{super}.Load$ will check that the stack
+isn't empty, which performs this duty.
+
+$\blacksquare$
+
+\subsubsection{Arbitrary Savepoints}
 
 \subsection{Summary}
 
