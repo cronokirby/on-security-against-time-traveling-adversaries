@@ -21,6 +21,72 @@
 
 \section{Defining Abstract Games}
 
+In this section, we develop a framework to abstract over essentially all
+security games used to define the standalone security of cryptographic schemes.
+
+We need such an abstraction in order to explore and compare different models
+of time travel.
+By having an abstract game, we can more easily define what it means to augment
+an adversary with the ability to travel through time, and we can more easily
+compare the differences between models of time travel across \emph{all}
+games, rather than for just a particular cryptographic scheme.
+
+\subsection{State-Separable Proofs}
+
+But first, we need a basic notion of standalone security.
+For this, we lean on the framework of \emph{state-separable proofs}
+\todo{cite}.
+
+In this framework, you start with \emph{packages}.
+A package $P$ is defined by its code.
+This codes describes how to initialize the state of the package, 
+and what functions the package exports.
+These exported functions are denoted by the set $\text{out}(P)$.
+Each of these functions can accept input, produce output, and read and write
+to the internal state of the package.
+Packages may also have a set of imported functions, denoted by $\text{in}(P)$.
+
+These imported functions are just ``placeholders'', with no semantics.
+For them to have meaning, the package needs to be \emph{linked} with another package.
+If $A$ and $B$ are packages such that $\text{in}(A) \subseteq \text{out}(B)$,
+then we can define the composition package $A \circ B$.
+The exports are that of $A$, with $\text{out}(A \circ B) = \text{out}(A)$,
+and the imports that of $B$, with $\text{in}(A \circ B) = \text{in}(B)$.
+This package is implemented by merging the states of $A$ and $B$, and replacing
+calls to the functions in $\text{in}(A)$ with the functionality defined in $B$.
+
+A \emph{game} $G$ is a package with
+$\text{in}(G) = \emptyset$.
+
+An \emph{adversary} $\mathcal{A}$ is a package with $\text{out}(\mathcal{A}) = \{\texttt{guess}\}$.
+The function $\texttt{guess}$ takes no input, and returns a single bit $\hat{b}$.
+This bit represents the adversary's guess as to which of two games it's playing.
+Furthermore, if the function $\texttt{guess}$ has a time complexity polynomial
+in a security parameter $\lambda$, we say that the adversary is \emph{efficient}.
+Most commonly, we assume that all adversaries are efficient, unless we explicitly
+mark an adversary as \emph{unbounded}.
+
+By linking an adversary with a game, we get a package $\mathcal{A} \circ G$
+with no imports, and a single export $\texttt{guess}$.
+This allows us to define the advantage of an adversary $\mathcal{A}$
+in distinguishing two games $G_0, G_1$, via the formula:
+
+$$
+\epsilon(\mathcal{A} \circ G_b) := \left|P[1 \gets \texttt{guess}()\ |\ b = 0] - P[1 \gets \texttt{guess}() \ |\ b = 1]\right|
+$$
+
+Given we a pair of games $G_0, G_1$, we say that they are:
+
+\begin{itemize}
+    \item \emph{equal}, denoted by $G_0 = G_1$, when $\epsilon(\mathcal{A} \circ G_b) = 0$ for any adversary, even unbounded.
+    \item \emph{indistinguishable}, denoted by $G_0 \approx G_1$, when $\epsilon(\mathcal{A} \circ G_b)$ is a negligeable function of $\lambda$, for any \emph{efficient} adversary (in $\lambda$).
+\end{itemize}
+
+The security of a cryptographic scheme is defined by a pair of games $G_b$.
+We say that the scheme is secure if $G_0 \approx G_1$.
+
+\subsection{Abstract Games}
+
 \begin{game}
 \captionsetup{justification=centering}
 $$
