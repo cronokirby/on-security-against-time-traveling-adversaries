@@ -85,6 +85,20 @@ Given we a pair of games $G_0, G_1$, we say that they are:
 The security of a cryptographic scheme is defined by a pair of games $G_b$.
 We say that the scheme is \emph{secure} if $G_0 \approx G_1$.
 
+For reductions, given game pairs $G_b$ and $H_b^1, \ldots, H_b^N$,
+and a function $p$, we write:
+
+$$
+G_b \leq p(H_b^1, \ldots, H_b^n)
+$$
+
+If for any efficient adversary $\mathcal{A}$ against $G_b$, there exists efficient
+adversaries $\mathcal{B}_1, \ldots, \mathcal{B}_n$ such that:
+
+$$
+\epsilon(\mathcal{A} \circ G_b) \leq p(\epsilon(\mathcal{B}_1 \circ H_b^1), \ldots, \epsilon(\mathcal{B}_n \circ H_b^n))
+$$
+
 \subsection{Abstract Games}
 
 In the formalism of state-separable proofs, each game can have a different interface,
@@ -144,6 +158,39 @@ This abstract game is simple, but still expressive enough to capture any
 kind of game expressable in the state-separable formalism.
 
 \section{Models of Time Travel}
+
+In this section we investigate various models of time travel, and compare
+them with each other, showing that they form a hierarchy of increasingly
+strong capabilities.
+
+The notion of time travel we explore is an intuitive one, inspired by
+science fiction.
+The adversary is equipped with a time machine, which allows them
+to travel forwards and backwards in time.
+However, the adversary must still be \emph{efficient}.
+From their point of view, they only perform a number of operations
+polynomial in the security parameter $\lambda$, including time travel
+hops.
+
+Some other models of time travel, like closed timelike curves, would allow,
+in essence, for computation with unbounded time (but bounded space) by an adversary.
+This is a much more powerful capability than we consider in this work,
+and unbounded computation breaks essentially all cryptography beyond
+information-theoretic schemes.
+
+We also assume that time is \emph{discrete}.
+Each interaction the adversary has with a game advances time forward
+by one step, and time hops can only be made between these discrete points
+in time.
+One potentially stronger capability would be to allow an adversary
+to ``partially'' undo the effects of an interaction, by rewinding
+an interaction before its completion.
+The reason we disallow this is because we assume the adversary has
+no other channels to learn about the state of the game beyond the
+information it gets from querying its exported functions.
+An adversary thus has no way of knowing where they need to time hop
+in order to partially undo an interaction, so we can make the simplifying
+assumption that all interactions are \emph{atomic}, and time is discrete.
 
 \subsection{Rewinding Models}
 
