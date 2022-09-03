@@ -700,7 +700,187 @@ $\blacksquare$
 
 \subsection{Summary}
 
+To summarize our findings, we have the following hierarchy of models
+of time travel:
+$$
+\text{No-Time-Travel} < \text{Rewind-1} = \text{Rewind-Many} = \text{Fork-Stack} < \text{Fork}
+$$
+So, even a bit of time travel helps, but then the next jump in capability
+only comes with the ability to fork timelines and travel at will between them.
+In other words, being able to jump backwards helps, and being able to jump
+forwards too helps even more.
+
 \section{On Depth and Position Restrictions}
+
+In the models we've considered so far, there are limits on what time travel capabilities
+the adversary has, but not in how they can use them.
+The adversary can fork whenever they want, as many times as they want,
+and advance each forked timeline at will.
+
+In this section, we model these kinds of restriction on time travel,
+and compare how they relate to each other.
+
+\subsection{Modelling Restrictions}
+
+The first kind of restriction is on the \emph{position} where an
+adversary can fork.
+Without time travel, the sequence of states $s_0, s_1, \ldots$
+is indexed by $\mathbb{N}$.
+A natural restriction is to only allow the adversary to
+fork on a subset $P \subseteq \mathbb{N}$ of these states.
+For example, the adversary may only be allowed to fork on the initial
+state $s_0$, but not any other states.
+
+The second kind of restriction is on the \emph{width} of the forks.
+In our current forking model, an adversary can create multiple
+paths from a savepoint by loading it multiple times.
+We can instead restrict the adversary to only load savepoints at most
+$w$ times.
+
+The third kind of restriction is on the \emph{depth} of the forks.
+In our model, the adversary is free to explore each fork to any depth.
+They can advance the state in each fork arbitrarily.
+With this restriction, we instead only allow the adversary to advance
+the state in a forked timeline $d$ times.
+
+More formally, given a set of positions $P \subseteq \mathbb{N}$, and
+a width and depth
+$w, d \in \mathbb{N} \cup \{\infty\}$, we can define the following
+transformation $\text{Fork}(P, w, d)$:
+
+\begin{game}
+\captionsetup{justification=centering}
+$$
+\boxed{
+\begin{aligned}
+&\colorbox{pink}{\large $\text{Fork}(P, w, d)(\mathcal{G}_b)$}\cr
+&\begin{aligned}
+    &s_0 \gets \texttt{init}_b()\cr
+    &p_0 \gets 0\cr
+    &\text{forkable} \gets \{0\}\cr
+    &c_0 \gets \infty\cr
+    &i, j \gets 0\cr
+    &\underline{\mathcal{O}(x):}\cr
+    &\ \texttt{assert } c_i > 0\cr
+    &\ c_i \gets c_i - 1\cr
+    &\ p_i \gets p_i + 1\cr
+    &\ \text{forkable} \gets \text{forkable} \cup \{i\}\cr
+    &\ s_i, y \gets \texttt{next}_b(s_i, x)\cr
+    &\ \texttt{return } y\cr
+\end{aligned}
+&\begin{aligned}
+    &\underline{\texttt{Fork}():}\cr
+    &\ \texttt{assert } p_i \in P\cr
+    &\ \texttt{assert } i \in \text{forkable}\cr
+    &\ j \gets j + 1\cr
+    &\ s_j, p_j, l_j, c_j \gets s_i, p_i, 0, d\cr
+    &\cr
+    &\underline{\texttt{Load}(i'):}\cr
+    &\ \texttt{assert } i' \leq j \land l_{i'} < w\cr
+    &\ i \gets i'\cr
+    &\ l_{i} \gets l_{i} + 1\cr
+\end{aligned}\cr
+\end{aligned}
+}
+$$
+\caption{$\text{Fork}(\mathcal{G}_b)$}
+\end{game}
+
+This game is like $\text{Fork}(\mathcal{G}_b)$, except with a few more restrictions.
+
+First, we keep track of the position of each fork along the timeline,
+via $p_i$. 
+This allows us to prevent forks unless the position $p_i$ is contained
+in the set of allowed positions $P$.
+
+In order to restrict the depth of each fork, each fork is associated
+with a counter $c_i$, which decrements each time the state advances.
+The main timeline $c_0$, has the counter set to $\infty$, to allow
+arbitrary progression.
+
+Finally, to restrict the width of each fork, we keep track of the number
+of times a fork has been loaded, via $l_i$.
+One technicality is that we also need to prevent a state from being
+forked unless it has been advanced before.
+With the use of the $\text{forkable}$ set, it would be possible
+to get around the width restriction by creating multiple save points
+at the same spot.
+By only allowing forks from a timeline after it has been advanced,
+we can enforce the width restriction correctly.
+
+\subsection{Comparing Restrictions}
+
+$\text{Fork}(P, w, d)$ is actually equivalent to not having access
+to time travel for certain parameters.
+If $P = \emptyset$, $w = 0$, or $d = 0$, then forking becomes
+impossible.
+This means that $\text{Fork}(\emptyset, w, d) = \text{Fork}(\emptyset, w', d')$,
+and similarly for the other extreme values for $w$ and $d$.
+
+At the other extreme, $\text{Fork}(\mathbb{N}, \infty, \infty) = \text{Fork}$.
+If we can fork anywhere, any number of times, and to any depth, we recover the general
+model of forking defined previously.
+
+It's clear that as $P$, $w$, and $d$ grow larger, the adversary grows
+more powerful.
+In particular, for all abstract games $\mathcal{G}_b$, and parameters
+$P, P', w, w', d, d'$, we have:
+
+\begin{itemize}
+    \item If $P \subseteq P'$, then $\text{Fork}(P, w, d)(\mathcal{G}_b) \leq \text{Fork}(P', w, d)(\mathcal{G}_b)$.
+    \item If $w \leq w'$, then $\text{Fork}(P, w, d)(\mathcal{G}_b) \leq \text{Fork}(P, w', d)(\mathcal{G}_b)$.
+    \item If $d \leq d'$, then $\text{Fork}(P, w, d)(\mathcal{G}_b) \leq \text{Fork}(P, w, d')(\mathcal{G}_b)$.
+\end{itemize}
+
+But, is it possible that certain parameter values are equivalent?
+If we increase the size of the parameters, is that a strictly stronger
+capability?
+
+It is.
+Increasing $P$, $w$, and $d$ yields a strictly stronger adversary.
+
+\begin{claim}
+    \label{claim:P-is-stronger}
+    For all $w, d > 0$, if $P' / P \neq \emptyset$, then there exists a
+    game $\mathcal{E}_b$ and adversary $\mathcal{A}$ such that 
+    $\text{Fork}(P, w, d)(\mathcal{E}_b)$ is secure, yet $\epsilon(\mathcal{A} \circ \text{Fork}(P', w, d)(\mathcal{E}_b)) = 1$.
+\end{claim}
+
+The basic idea of the proof is that we engineer a game which requires
+the adversary to fork at a position in $P'$, but not $P$, which demonstrates
+the separation.
+
+Given $p \in P' / P$, we can construct the following game:
+$$
+\boxed{
+\begin{aligned}
+&\colorbox{pink}{\large $\mathcal{E}_b$}\cr
+&k_0, k_1 \xleftarrow{R} \{0, 1\}^\lambda\cr
+&i \gets -1\cr
+&\begin{aligned}
+    &\underline{\texttt{Query}(\sigma):}\cr
+    &\ i \gets i + 1\cr
+    &\ \texttt{if } i \neq p\cr
+    &\ \quad \texttt{return } \bot\cr
+    &\ \texttt{return } k_\sigma\cr
+\end{aligned}
+&\begin{aligned}
+    &\ \underline{\texttt{Guess}(\hat{k}_0, \hat{k}_1):}\cr
+    &\ \texttt{assert } \hat{k}_0 = k_0 \land \hat{k}_1 = k_1\cr
+    &\ \texttt{return } b\cr
+    &\cr
+\end{aligned}\cr
+\end{aligned}
+}
+$$
+In order to win the game, the adversary needs to learn both $k_0$
+and $k_1$.
+Because of their size, this requires the adversary to make two
+queries, both at step $p$.
+This requires the adversary to be able to fork at step $p$,
+which they are unable to do in $\text{Fork}(P, w, d)(\mathcal{E}_b)$.
+
+$\blacksquare$
 
 \section{Effects of Time Travel on Common Schemes}
 
