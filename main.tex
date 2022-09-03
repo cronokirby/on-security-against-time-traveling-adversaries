@@ -959,7 +959,106 @@ $\blacksquare$
 
 \section{Effects of Time Travel on Common Schemes}
 
+In this section, we explore the impacts of time travel on various
+crytographic schemes.
+
+First, we look at some general results, namely that for \emph{stateless}
+games, time travel provided no advantage.
+
+Then, we look at more concrete results, showing that while $\text{IND-CCA}$
+encryption is broken against time travel, $\text{IND-CPA}$ encryption
+remain secure.
+We also investigate signatures, showing that the $\text{EF-CMA}$
+game is broken against time travel, but that a slightly weaker notion
+of security remains secure.
+
 \subsection{Stateless Schemes Remain Secure}
+
+So far, we've shown that two models of time travel, $\text{Rewind-1}$
+and $\text{Fork}$ provide strictly stronger capabilities.
+The separation in both cases relied on the adversary being able to
+``undo'' certain checks made inside of the game.
+
+However, if the state of the game remains static after initialization,
+then the adversary gains no advantage through time travel,
+because the state never changes, so time travel has no effect on this
+state.
+
+More formally, given an abstract game $\mathcal{G}_b(\texttt{init}, \texttt{next})$,
+we say that the game is \emph{stateless} if for all inputs and states $s$, $x$, it holds that:
+$$
+(s', \cdot) \gets \text{next}(s, x) \implies s' = s
+$$
+In other words, no matter what initial state we have, and what input
+we pass to the game, the state will never change.
+
+\begin{claim}
+\label{claim:stateless-games}
+For any stateless game $\mathcal{G}_b$, time travel provides no advantage.
+
+In particular, we have $\text{Fork}(\mathcal{G}_b) \leq \mathcal{G}_b$.
+\end{claim}
+
+Since the state never changes, we can easily emulate the time
+jumps by doing nothing.
+More formally, if we write down the $\text{Fork}(\mathcal{G}_b)$
+game explicitly, using the fact that the state doesn't change, we get
+the game $\Gamma^0$:
+$$
+\boxed{
+\begin{aligned}
+&\colorbox{pink}{\large $\Gamma^0$}\cr
+&\begin{aligned}
+    &s_0 \gets \texttt{init}_b()\cr
+    &i, j \gets 0\cr
+    &\underline{\mathcal{O}(x):}\cr
+    &\ \cdot, y \gets \texttt{next}_b(s_0, x)\cr
+    &\ \texttt{return } y\cr
+\end{aligned}
+&\begin{aligned}
+    &\underline{\texttt{Fork}():}\cr
+    &\ j \gets j + 1\cr
+    &\underline{\texttt{Load}(i'):}\cr
+    &\ \texttt{assert } i' \leq j\cr
+    &\ i \gets i'\cr
+\end{aligned}\cr
+\end{aligned}
+}
+$$
+
+In $\Gamma^0$, the $\texttt{Fork}$ and $\texttt{Load}$ functions have
+no impact on the rest of the game, allowing us to separate out
+$\mathcal{G}_b$, to get:
+
+$$
+\Gamma^0 = 
+\boxed{
+\begin{aligned}
+&\colorbox{pink}{\large $\Gamma^1$}\cr
+&\begin{aligned}
+    &i, j \gets 0\cr
+    &\underline{\mathcal{O}(x):}\cr
+    &\ \texttt{return } \texttt{super}.\mathcal{O}(x)\cr
+\end{aligned}
+&\begin{aligned}
+    &\underline{\texttt{Fork}():}\cr
+    &\ j \gets j + 1\cr
+    &\underline{\texttt{Load}(i'):}\cr
+    &\ \texttt{assert } i' \leq j\cr
+    &\ i \gets i'\cr
+\end{aligned}\cr
+\end{aligned}
+} \circ \mathcal{G}_b
+$$
+
+which ends our reduction.
+
+$\blacksquare$
+
+The security of many schemes can be formulated with a stateless game,
+so Claim \ref{claim:stateless-games} is a very useful tool
+to quickly show security against time travel.
+We make use of this tool frequently in the following sections.
 
 \subsection{On Encryption}
 
