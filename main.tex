@@ -1123,10 +1123,17 @@ is stateful.
 $\text{IND-CPA}$, on the other hand, remains secure, because
 the game is inherently stateless.
 
-
 \begin{claim}
 \label{claim:ind-cpa-secure}
+For any encryption scheme $\mathcal{E}$,
+$\text{Fork}(\text{IND-CPA}(\mathcal{E})) \leq \text{IND-CPA}(\mathcal{E})$.
 \end{claim}
+
+Looking at the definition in Game \ref{game:ind-cpa}, it's clear
+that the associated abstract game is $\emph{stateless}$.
+We can thus apply Claim \ref{claim:stateless-games} to obtain our result.
+
+$\blacksquare$
 
 \subsection{On Signatures}
 
