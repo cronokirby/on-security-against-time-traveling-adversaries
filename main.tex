@@ -461,7 +461,7 @@ $$
 \end{aligned}
 }
 $$
-\caption{$\text{Rewind-Many}(\mathcal{G}_b)$}
+\caption{$\text{Fork-Stack}(\mathcal{G}_b)$}
 \end{game}
 
 We maintain a stack of savepoints, which are just snapshots of the state
@@ -571,6 +571,132 @@ isn't empty, which performs this duty.
 $\blacksquare$
 
 \subsubsection{Arbitrary Savepoints}
+
+In the $\text{Fork-Stack}$ model, the adversary is limited to only
+load the most recently created savepoint.
+As we proved in Claim \ref{claim:fork-stack-is-not-stronger}, this model
+gives no advantage over just being able to move backwards in time.
+
+In order to capture the ability to move both backwards and forwards
+at will, we can remove this restriction on which savepoints can be loaded.
+We now maintain a list of savepoints, and these savepoints can loaded
+in any order and multiple times, at will, without any restrictions.
+
+More formally, we capture this notion with the
+$\text{Fork}$ transformation:
+
+\begin{game}
+\captionsetup{justification=centering}
+$$
+\boxed{
+\begin{aligned}
+&\colorbox{pink}{\large $\text{Fork}(\mathcal{G}_b)$}\cr
+&\begin{aligned}
+    &s_0 \gets \texttt{init}_b()\cr
+    &i, j \gets 0\cr
+    &\underline{\mathcal{O}(x):}\cr
+    &\ s_i, y \gets \texttt{next}_b(s_i, x)\cr
+    &\ \texttt{return } y\cr
+\end{aligned}
+&\begin{aligned}
+    &\underline{\texttt{Fork}():}\cr
+    &\ j \gets j + 1\cr
+    &\ s_j \gets s_i\cr
+    &\underline{\texttt{Load}(i'):}\cr
+    &\ \texttt{assert } i' \leq j\cr
+    &\ i \gets i'\cr
+\end{aligned}\cr
+\end{aligned}
+}
+$$
+\caption{$\text{Fork}(\mathcal{G}_b)$}
+\end{game}
+
+The essence is that the game now maintains multiple states $s_0, s_1, \ldots$
+in parallel.
+At any point, the adversary is free to switch which state is currently
+being used, or to create a parallel state from the current one.
+This captures the intuitive notion of traveling at will between
+parallel timelines.
+
+It turns out that this model of time travel is strictly stronger than the
+others we've seen so far.
+
+\begin{claim}
+    \label{claim:fork-is-strong}
+    $\text{Fork}$ is strictly stronger than $\text{Fork-Stack}$,
+    assuming the existence of secure pseudo-random functions.
+
+    In particular, given a secure PRF $F$, there exists a game $\mathcal{E}_b$ and adversary $\mathcal{A}$ such that 
+    $\text{Rewind-1}(\mathcal{E}_b)$ is secure, yet $\epsilon(\mathcal{A} \circ \text{Fork}(\mathcal{E}_b)) = 1$.
+\end{claim}
+
+Consider the following game:
+
+$$
+\boxed{
+\begin{aligned}
+&\colorbox{pink}{\large $\mathcal{E}_b$}\cr
+&\begin{aligned}
+    &k \xleftarrow{R} \mathcal{K}\cr
+    &x \gets \bot\cr
+    &\text{queried} \gets 0\cr
+    &\cr
+    &\underline{\texttt{Win}(y):}\cr
+    &\ \texttt{assert } x \neq \bot\cr
+    &\ \texttt{assert } F(k, x) = y\cr
+    &\ \texttt{return } b\cr
+\end{aligned}
+&\begin{aligned}
+    &\underline{\texttt{Query}(\hat{x}):}\cr
+    &\ \texttt{assert } \text{queried} = 0\cr
+    &\ \text{queried} \gets 1\cr
+    &\ \texttt{return } F(k, \hat{x})\cr
+    &\cr
+    &\underline{\texttt{Input}():}\cr
+    &\ \texttt{assert } \text{queried} = 0\cr
+    &\ \text{queried} \gets 1\cr
+    &\ x \xleftarrow{R} \mathcal{X}\cr
+    &\ \texttt{return } x\cr
+\end{aligned}\cr
+\end{aligned}
+}
+$$
+
+The idea is that we have a pseudo-random function, seeded with
+a random key $k$.
+The adversary can either query the function on an input of their choice,
+or attempt to win the game, by receiving a challenge input $x$,
+and then responding with the evaluation of the PRF $F$ on that input.
+Crucially, they're allowed to perform a query, or to prepare
+the challenge input, but not both.
+
+This game is insecure against forking, as demonstrated by the following
+strategy for $\text{Fork}(\mathcal{E}_b)$:
+
+$$
+\begin{aligned}
+&x \gets \texttt{Input}()\cr
+&\texttt{Fork}()\cr
+&\texttt{Load}(0)\cr
+&y \gets \texttt{Query}(x)\cr
+&\texttt{Load}(1)\cr
+&b \gets \texttt{Win}(y)\cr
+&\texttt{return } b
+\end{aligned}
+$$
+
+On the other hand, the game $\text{Rewind-1}(\mathcal{E}_b)$ remains
+secure, provided that $|\mathcal{X}|^{-1}$ is negligeable in $\lambda$.
+While the adversary can use rewinding to query multiple times,
+they won't know which input $x$ they need to query.
+Except with negligeable probability, each new call to $\texttt{Input}$
+will yield a different value of $x$.
+Because the adversary cannot predict the value of $x$, nor can they
+learn the output of $F$ after they know $x$, since $F$ is a secure
+PRF, they cannot win the game.
+
+$\blacksquare$
 
 \subsection{Summary}
 
