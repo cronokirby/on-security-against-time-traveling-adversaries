@@ -17,8 +17,6 @@
 
 \section{Introduction}
 
-\cite{maurer_unifying_2009}
-
 \section{Defining Abstract Games}
 
 In this section, we develop a framework to abstract over essentially all
@@ -1062,6 +1060,74 @@ We make use of this tool frequently in the following sections.
 
 \subsection{On Encryption}
 
+One very common notion of security for encryption schemes is
+that of $\text{IND-CCA}$ security \cite{ny90}.
+In the $\text{IND}$ family of games, the adversary can present
+the challenger with a message of their choice, receiving
+back either the encryption of that message, or a random message.
+\footnote{We use the ``real or random'' variant of $\text{IND}$, rather than the ``left or right'' variant, since the former is easier to use with state-separable proofs.}.
+The difference between the variants $\text{IND}$, $\text{IND-CPA}$, and $\text{IND-CCA}$
+lies in what additional oracles the adversary has access to.
+
+In $\text{IND-CPA}$, the adversary has access to an oracle which lets them
+receive encryptions of messages of their choice.
+In $\text{IND-CCA}$, the adversary additionally has access to an oracle
+allowing them to make decrypt ciphertexts of their choice.
+Crucially, the adversary is \emph{not} allowed to decrypt any ciphertexts
+produced by querying the challenge.
+Both of these games are formally presented in the appendix, as
+Game \ref{game:ind-cpa} and Game \ref{game:ind-cca}, respectively.
+
+This difference is what allows time travel to break the
+$\text{IND-CCA}$ game.
+Because the game keeps track of which challenge ciphertexts have been produced,
+disallowing decryption queries to those ciphertexts, the adversary
+can use time travel to make the game ``forget'' which challenges have
+been produced, and then use the decryption oracle to formally win.
+
+\begin{claim}
+\label{claim:ind-cca-broken}
+Given any encryption scheme $\mathcal{E} = (\mathcal{K}, \mathcal{M}, \mathcal{C}, E, D)$, and message $m \in \mathcal{M}$, there exists a an adversary
+$\mathcal{A}$, such that $\epsilon(\mathcal{A} \circ \text{Rewind-1}(\text{IND-CCA}_b(\mathcal{E}))) = 1 - |\mathcal{M}(|m|)|^{-1}$
+where $|\mathcal{M}(|m|)|$ denotes the number of messages with the same length as $m$.
+\end{claim}
+
+The idea is quite simple: the adversary first obtains a challenge ciphertext (any message works),
+and then makes the game forget that it produced this challenge, allowing the adversary
+to then query the decryption oracle on the challenge, thus learning
+information about the secret bit $b$.
+
+More formally, consider the following strategy:
+$$
+\begin{aligned}
+&c \gets \texttt{Challenge}(m)\cr
+&\texttt{Rewind}()\cr
+&\hat{m} \gets \texttt{Dec}(c)\cr
+&\texttt{return } \hat{m} \neq m\cr
+&
+\end{aligned}
+$$
+
+The adversary will be allowed to query $\text{Dec}$ with $c$,
+because the set of challenge ciphertexts is made empty by $\texttt{Rewind}$.
+Then, if $b = 0$, the adversary will return $0$, since the ciphertext
+will be an encryption of $m$.
+Otherwise, if $b = 1$, the adversary will only return $0$ if the
+random message happens to equal $m$, which happens with probability
+$|\mathcal{M}(|m|)|^{-1}$.
+
+$\blacksquare$
+
+Crucially, our attack uses the fact that the $\text{IND-CCA}$ game
+is stateful.
+$\text{IND-CPA}$, on the other hand, remains secure, because
+the game is inherently stateless.
+
+
+\begin{claim}
+\label{claim:ind-cpa-secure}
+\end{claim}
+
 \subsection{On Signatures}
 
 \section{Further Work}
@@ -1069,5 +1135,73 @@ We make use of this tool frequently in the following sections.
 \section{Conclusion}
 
 \bibliographystyle{alpha}
-\small \bibliography{bib}
+{\small \bibliography{bib}}
+\clearpage
+\appendix
+
+\section{Additional Game Definitions}
+
+\subsection{Encryption}
+
+An encryption scheme $\mathcal{E}$ consists of types $\mathcal{K}, \mathcal{M}, \mathcal{C}$,
+along with functions $E : \mathcal{K} \times \mathcal{M} \xleftarrow{R} \mathcal{C}$ and $D : \mathcal{K} \times \mathcal{C} \to \mathcal{M}$.
+By $\mathcal{M}(|m|)$ we denote the distribution of messages with the same
+length as $m$.
+The security of an encryption scheme can be captured by one of the following
+two games:
+
+\begin{game}
+\captionsetup{justification=centering}
+$$
+\boxed{
+\begin{aligned}
+&\colorbox{pink}{\large $\text{IND-CPA}_b$}\cr
+&k \xleftarrow{R} \mathcal{K}\cr
+&\begin{aligned}
+    &\underline{\texttt{Challenge}(m):}\cr
+    &\ m_1 \xleftarrow{R} \mathcal{M}(|m_0|)\cr
+    &\ c \gets E(k, m_b)\cr
+    &\ \texttt{return } c\cr
+\end{aligned}
+&\begin{aligned}
+    &\underline{\texttt{Enc}(m):}\cr
+    &\ \texttt{return } E(k, m)\cr
+    &\cr
+    &\cr
+\end{aligned}\cr
+\end{aligned}
+}
+$$
+\caption{$\text{IND-CPA}_b$}
+\label{game:ind-cpa}
+\end{game}
+\begin{game}
+\captionsetup{justification=centering}
+$$
+\boxed{
+\begin{aligned}
+&\colorbox{pink}{\large $\text{IND-CCA}_b$}\cr
+&k \xleftarrow{R} \mathcal{K}\cr
+&S \gets \emptyset\cr
+&\begin{aligned}
+    &\underline{\texttt{Challenge}(m_0):}\cr
+    &\ m_1 \xleftarrow{R} \mathcal{M}(|m_0|)\cr
+    &\ c \gets E(k, m_b)\cr
+    &\ S \gets S \cup \{c\}\cr
+    &\ \texttt{return } c\cr
+\end{aligned}
+&\begin{aligned}
+    &\underline{\texttt{Enc}(m):}\cr
+    &\ \texttt{return } E(k, m)\cr
+    &\underline{\texttt{Dec}(c):}\cr
+    &\ \texttt{assert } c \notin S\cr
+    &\ \texttt{return } D(k, c)\cr
+\end{aligned}\cr
+\end{aligned}
+}
+$$
+\caption{$\text{IND-CCA}_b$}
+\label{game:ind-cca}
+\end{game}
+
 \end{document}
