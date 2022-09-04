@@ -1246,6 +1246,24 @@ of time machines.
 
 
 \section{Conclusion}
+In this work, we investigated some impacts of time travel on cryptography.
+
+We did this by first defining the notion of \emph{abstract games},
+allowing us to represent all security games using a common interface.
+We then defined various models of time travel as transformations over
+abstract games.
+We showed that these models formed a hierarchy, with backwards
+time travel more powerful than no time travel, and the addition
+of forwards time travel being even more powerful.
+
+We also looked at the concrete effects of our models of time travel
+on various cryptographic schemes.
+We proved that for \emph{stateless} games, time travel provides no
+advantage.
+This led us to conclude that the $\text{IND-CPA}$ and $\text{UUF-CMA}$
+games for encryption and signatures remained secure under time travel,
+and yet $\text{IND-CCA}$ and $\text{EUF-CMA}$ were broken,
+even under the weakest model of time travel.
 
 \bibliographystyle{alpha}
 {\small \bibliography{bib}}
