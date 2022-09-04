@@ -11,7 +11,7 @@
 \begin{abstract}
     \noindent If you had a time machine, what cryptography would you be able to break?
 
-    In this work, we investigate the of notion time travel, formally defining a model for adversaries
+    In this work, we investigate the notion of time travel, formally defining a model for adversaries
     equipped with a time machine, and exploring the consequences
     for cryptography.
     We find that being able to rewind time allows breaking some
@@ -35,7 +35,7 @@ This is enough to break many existing schemes, but it is possible to
 design cryptography which can resist quantum attacks.
 
 If time machines were possible, could they help an adversary break
-certain cryptographic schemes? Can we design cryptograpy which
+certain cryptographic schemes? Can we design cryptography which
 is secure even against time traveling adversaries?
 We investigate these questions in this work.
 
@@ -274,7 +274,7 @@ allowing us to define the game pair $\mathcal{G}_b(\texttt{init}, \texttt{next})
 which is shorthand for $\mathcal{G}(\texttt{init}_b, \texttt{next}_b)$.
 
 This abstract game is simple, but still expressive enough to capture any
-kind of game expressable in the state-separable formalism.
+kind of game expressible in the state-separable formalism.
 
 \section{Models of Time Travel}
 \label{sec:model}
@@ -661,7 +661,7 @@ One tricky aspect is that an adversary can rewind to any point without
 having to create a savepoint there in advance.
 In particular, they can choose how they rewind based on the results
 of interacting with the game.
-To accomodate this freedom, we can simply always make a savepoint,
+To accommodate this freedom, we can simply always make a savepoint,
 allowing us to rewind by loading multiple times in a row.
 
 \textbf{Proof:}\\
@@ -1129,7 +1129,7 @@ $\blacksquare$
 \label{sec:effect}
 
 In this section, we explore the impacts of time travel on various
-crytographic schemes.
+cryptographic schemes.
 
 First, we look at some general results, namely that for \emph{stateless}
 games, time travel provides no advantage.
