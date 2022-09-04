@@ -9,15 +9,139 @@
 \maketitle
 
 \begin{abstract}
-    \noindent In this work, we investigate the notion of
-    time travel, formally defining a model for adversaries
+    \noindent If you had a time machine, what cryptography would you be able to break?
+
+    In this work, we investigate the of notion time travel, formally defining a model for adversaries
     equipped with a time machine, and the subsequent consequences
-    on common cryptographic schemes.
+    on cryptography.
+    We find that being able to rewind time allows breaking some
+    cryptographic schemes, and being able to freely move both
+    forwards and backwards in time breaks even more schemes.
+
+    We look at the impacts of time travel on encryption and signatures,
+    finding that the $\text{IND-CCA}$ and $\text{EUF-CMA}$ security
+    games are broken, while $\text{IND-CPA}$ and $\text{UUF-CMA}$
+    remain secure.
 \end{abstract}
 
 \section{Introduction}
 
+Classical cryptography tries to build schemes which are secure
+against adversaries equipped with a computer, so long as they're
+bounded in the amount of computation they can do.
+Post-quantum cryptography additionally provides adversaries
+with a \emph{quantum} computer.
+This is enough to break many schemes, and yet it's possible to
+design cryptography which resists quantum attacks.
+
+If time machines were possible, could they help an adversary break
+certain cryptographic schemes? Can we design cryptograpy which
+is secure even against time traveling adversaries?
+We investigate these questions in this work.
+
+We consider the ``intuitive'' notion of time travel that one might
+encounter in various works of science fiction.
+An adversary has a time machine which allows them to jump through
+time, rewinding time backwards, and skipping time forwards.
+
+This capability allows the adversary to break certain schemes,
+because they're able to get around various checks made in security games.
+For example, in the \text{EUF-CMA} game, the adversary has access to an
+oracle allowing them to sign any message of their choice.
+The adversary wins by producing a forgery for a new message, one
+that hasn't been signed by the oracle.
+Time travel enables an adversary to trivially break this game
+by querying the oracle, and then traveling backwards in time, to
+a point where no messages have yet been signed, and then presenting
+their signature as a valid forgery.
+Intuitively, this is like convincing someone that they've signed
+a message by presenting them with a signature that they will create
+in the future.
+
+Beyond investigating concrete breakages of certain schemes,
+we also present a fine grained analysis of different models.
+We consider several variations of time travel, and show how they
+form a hierarchy, with some models of time travel strictly more powerful
+than others.
+In particular, the ability to travel backwards is more powerful
+than no time travel at all, and being able to move both forwards and
+backwards is even more powerful.
+
+We also consider restrictions on which points in time the adversary
+can travel, and how deep they can travel in forked timelines,
+showing that these restrictions are strictly weaker.
+
+\subsection{Relevance of Time Travel}
+
+Given that time machines are mainly a subject of science fiction,
+the notion of time travel might seem practically irrelevant to
+cryptography.
+We think this that might not be the case.
+
+One notion similar to that of time travel is ``resettable encryption'' \cite{yil09}.
+In this work, they consider a cryptographic system deployed on a virtual machine.
+Because the adversary has the ability to reset the state of the virtual machine,
+the system needs to satisfy a higher level of encryption, in order to withstand
+attacks using this resetting functionality.
+From the perspective of the system, the adversary effectively has the ability
+to time travel, by rewinding the state backwards in time.
+Our models of time travel may thus be relevant to certain deployments
+of cryptography on virtual machines, when the adversary has the ability
+to rewind the state of that machine.
+
+Other attacks against practical systems have been conducted by
+tricking devices into rewinding their system clocks backwards in time.
+For example, an attack by Iovino et al. \cite{ivv20} used this
+clock corruption in order to attack digital contact tracing systems.
+From the perspective of the system under attack, clock rewinding
+adversaries are effectively time traveling adversaries.
+Thus, our exploration of time travel might be relevant to practical
+systems whose security depends on a clock.
+
+Finally, in the realm of probabilistic proofs, notions of rewinding
+are relevant to security.
+For proofs of knowledge, the extractor is often given the ability
+to \emph{rewind} the prover, and uses this ability to extract
+a secret value from the prover.
+From the perspective of the prover, the extractor is effectively traveling
+back in time.
+For interactive oracle proofs \cite{bcs16}, the notion
+of \emph{state-restoration soundness} is relevant when compiling
+a multi-round interactive protocol into a non-interactive proof.
+Indeed, the protocol must remain sound even if a prover has
+the ability to retry each round individually.
+We can model this by giving the prover access to a time machine
+which allows them to jump backwards in time.
+Thus, the crucial notion of state-restoration soundness
+coincides with notions of time travel we explore
+in this work.
+
+\subsection{Overview}
+
+In Section \ref{sec:abstract-game}, we revisit the notion of standalone security, and define
+the notion of \emph{abstract game}, which allows us to encapsulate
+security games under a common interface.
+
+In Section \ref{sec:model} We then use this notion to define various models of time travel as
+transformations of abstract games.
+We compare these various models, showing that they form a hierarchy,
+with some models strictly more powerful than others.
+
+In Section \ref{sec:restriction}, we consider the effects
+of restrictions on the positions where an adversary can create forked
+timelines, and on the depth of each timeline, showing that restrictions
+create strictly weaker capabilities.
+
+In Section \ref{sec:effect}, we investigate the effect of time
+travel on common cryptographic schemes.
+We find that schemes whose security can be captured by a \emph{stateless}
+game are unaffected by time travel, including $\text{IND-CPA}$
+security for encryption, and $\text{UUF-CMA}$ security for signatures.
+On the other hand, both the $\text{IND-CCA}$ and $\text{EUF-CMA}$ games
+are broken, even in the weakest model of time travel.
+
 \section{Defining Abstract Games}
+\label{sec:abstract-game}
 
 In this section, we develop a framework to abstract over essentially all
 security games used to define the standalone security of cryptographic schemes.
@@ -77,7 +201,7 @@ Given we a pair of games $G_0, G_1$, we say that they are:
 
 \begin{itemize}
     \item \emph{equal}, denoted by $G_0 = G_1$, when $\epsilon(\mathcal{A} \circ G_b) = 0$ for any adversary, even unbounded.
-    \item \emph{indistinguishable}, denoted by $G_0 \approx G_1$, when $\epsilon(\mathcal{A} \circ G_b)$ is a negligeable function of $\lambda$, for any \emph{efficient} adversary (in $\lambda$).
+    \item \emph{indistinguishable}, denoted by $G_0 \approx G_1$, when $\epsilon(\mathcal{A} \circ G_b)$ is a negligible function of $\lambda$, for any \emph{efficient} adversary (in $\lambda$).
 \end{itemize}
 
 The security of a cryptographic scheme is defined by a pair of games $G_b$.
@@ -154,6 +278,7 @@ This abstract game is simple, but still expressive enough to capture any
 kind of game expressable in the state-separable formalism.
 
 \section{Models of Time Travel}
+\label{sec:model}
 
 In this section we investigate various models of time travel, and compare
 them with each other, showing that they form a hierarchy of increasingly
@@ -169,7 +294,7 @@ polynomial in the security parameter $\lambda$, including time travel
 hops.
 
 Some other models of time travel, like closed timelike curves, would allow,
-in essence, for computation with unbounded time (but bounded space) by an adversary.
+in essence, for computation with unbounded time (but bounded space) by an adversary \cite{Brun03}.
 This is a much more powerful capability than we consider in this work,
 and unbounded computation breaks essentially all cryptography beyond
 information-theoretic schemes.
@@ -290,7 +415,7 @@ able to learn the value of $b$.
 Now, because $k_\sigma$ has $\lambda$ bits, an adversary won't be able
 to randomly guess its value.
 This means that if the adversary only knows one of the keys, they won't
-be able to pass the assertion except with negligeable probability.
+be able to pass the assertion except with negligible probability.
 This means that $\mathcal{E}_b$ is secure.
 
 On the other hand, $\text{Rewind-1}(\mathcal{E}_b)$ is already broken.
@@ -734,10 +859,10 @@ $$
 $$
 
 On the other hand, the game $\text{Rewind-1}(\mathcal{E}_b)$ remains
-secure, provided that $|\mathcal{X}|^{-1}$ is negligeable in $\lambda$.
+secure, provided that $|\mathcal{X}|^{-1}$ is negligible in $\lambda$.
 While the adversary can use rewinding to query multiple times,
 they won't know which input $x$ they need to query.
-Except with negligeable probability, each new call to $\texttt{Input}$
+Except with negligible probability, each new call to $\texttt{Input}$
 will yield a different value of $x$.
 Because the adversary cannot predict the value of $x$, nor can they
 learn the output of $F$ after they know $x$, since $F$ is a secure
@@ -758,6 +883,7 @@ In other words, being able to jump backwards helps, and being able to jump
 forwards too helps even more.
 
 \section{On Depth and Position Restrictions}
+\label{sec:restriction}
 
 In the models we've considered so far, there are limits on what time travel capabilities
 the adversary has, but not in how they can use them.
@@ -999,12 +1125,13 @@ is secure.
 The adversary cannot learn both $k_0$ and $k_1$ via $\texttt{Query}$
 and $\texttt{Wait}$, since they lack the depth in their fork.
 Since both keys have length $\lambda$, the adversary cannot guess
-either of them with more than negligeable probability either.
+either of them with more than negligible probability either.
 
 
 $\blacksquare$
 
 \section{Effects of Time Travel on Common Schemes}
+\label{sec:effect}
 
 In this section, we explore the impacts of time travel on various
 crytographic schemes.
