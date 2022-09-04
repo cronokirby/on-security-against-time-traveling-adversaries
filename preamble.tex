@@ -21,6 +21,7 @@
 \usepackage{caption}
 \usepackage{chngcntr}
 \usepackage{tikz}
+\usetikzlibrary{shapes}
 \usepackage{stmaryrd}
 
 \captionsetup{labelfont=bf, justification=raggedright, singlelinecheck=false}
@@ -33,11 +34,9 @@
 \newenvironment{afigure}[2]
     {
     \begin{figure}[H]
-    \begin{mdframed}[align=left]
     \caption{\label{#1} \textbf{#2}}
     }
     {
-    \end{mdframed}
     \end{figure}
     }
 
