@@ -1216,6 +1216,35 @@ $\blacksquare$
 
 \section{Further Work}
 
+In this section, we look at some unanswered questions and possible
+lines of improvement for this work.
+
+While we've considered a handful of different models for time travel,
+along with restrictions for these models, we expect that further work
+might develop more powerful models, or more fine-grained restrictions.
+
+Another interesting line of work would be to investigate which classes
+of game make certain models of time-travel equivalent.
+Similar to Claim \ref{claim:stateless-games} for stateless games,
+it might be possible that certain classes of games make
+$\text{Fork}$ and $\text{Fork-Stack}$ equivalent, for example.
+
+In Claim \ref{claim:fork-is-strong}, we separated $\text{Fork}$
+from $\text{Fork-Stack}$, assuming the existence of secure
+pseudo-random functions.
+One natural extension of this work would be to find the weakest
+primitive necessary to separate the two transformations, or
+even prove that a separation exists without any cryptographic assumptions.
+
+In this work, we've considered standalone security, using games.
+Further work might extend models of travel to work with
+simulation based security, or even universally composable security \cite{can01}.
+Unfortunately, we expect that modelling time travel in a concurrent setting will prove
+substantially more difficult than modelling it in the standalone setting.
+On the other hand, this model would more likely match realistic deployments
+of time machines.
+
+
 \section{Conclusion}
 
 \bibliographystyle{alpha}
