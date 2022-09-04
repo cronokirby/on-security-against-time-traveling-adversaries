@@ -575,11 +575,11 @@ Instead of having a linear sequence of states, we now have a tree:
 \end{tikzpicture}
 \end{figure}
 
-To model this technically, we introduce the notion of \emph{savepoints}.
-By creating a savepoint at particular point in time, an adversary is
+To model this technically, we introduce the notion of \emph{save points}.
+By creating a save point at particular point in time, an adversary is
 able to return to the state of the game at that point in time.
-Each savepoint is thus a junction point in the tree.
-By returning back to a savepoint, the adversary creates a new branch
+Each save point is thus a junction point in the tree.
+By returning back to a save point, the adversary creates a new branch
 at that junction:
 
 \begin{figure}[H]
@@ -603,10 +603,10 @@ at that junction:
 \end{tikzpicture}
 \end{figure}
 
-\subsubsection{A Stack of Savepoints}
+\subsubsection{A Stack of Save Points}
 
-In the first model we consider, an adversary is free to create savepoints
-anywhere, but can only jump to the most recently created savepoint.
+In the first model we consider, an adversary is free to create save points
+anywhere, but can only jump to the most recently created save point.
 We denote this capability by $\text{Fork-Stack}$:
 
 \begin{game}
@@ -635,10 +635,10 @@ $$
 \caption{$\text{Fork-Stack}(\mathcal{G}_b)$}
 \end{game}
 
-We maintain a stack of savepoints, which are just snapshots of the state
-of the game, but we can only reload the most recent savepoint, consuming
+We maintain a stack of save points, which are just snapshots of the state
+of the game, but we can only reload the most recent save point, consuming
 it.
-The adversary also needs to proactively create savepoints if they want to be able
+The adversary also needs to proactively create save points if they want to be able
 to rewind time.
 
 How does $\text{Fork-Stack}$ compare with $\text{Rewind-Many}$?
@@ -653,15 +653,15 @@ It turns out that they're equivalent.
 \end{claim}
 
 \textbf{Proof Idea:}\\
-Because we can only load the most recent savepoint, we can emulate
+Because we can only load the most recent save point, we can emulate
 these loads using rewinding.
 
 In the other direction, we need to emulate rewinding with forking.
 One tricky aspect is that an adversary can rewind to any point without
-having to create a savepoint there in advance.
+having to create a save point there in advance.
 In particular, they can choose how they rewind based on the results
 of interacting with the game.
-To accommodate this freedom, we can simply always make a savepoint,
+To accommodate this freedom, we can simply always make a save point,
 allowing us to rewind by loading multiple times in a row.
 
 \textbf{Proof:}\\
@@ -708,7 +708,7 @@ In Claim \ref{claim:rewind-many-is-not-strong}, we showed that
 $\text{Rewind-Many}(\mathcal{G}_b) \leq \text{Rewind-1}(\mathcal{G}_b)$, so
 it suffices to prove that $\text{Rewind-1}(\mathcal{G}_b) \leq \text{Fork-Stack}(\mathcal{G}_b)$.
 
-We define a wrapper $\Gamma$, which works by always creating a savepoint,
+We define a wrapper $\Gamma$, which works by always creating a save point,
 and then using those to implement rewinding.
 
 $$
@@ -741,16 +741,16 @@ isn't empty, which performs this duty.
 
 $\blacksquare$
 
-\subsubsection{Arbitrary Savepoints}
+\subsubsection{Arbitrary Save Points}
 
 In the $\text{Fork-Stack}$ model, the adversary is limited to only
-loading the most recently created savepoint.
+loading the most recently created save point.
 As we proved in Claim \ref{claim:fork-stack-is-not-stronger}, this model
 gives no advantage over just being able to move backwards in time.
 
 In order to capture the ability to move both backwards and forwards
-at will, we can remove the restriction on which savepoints can be loaded.
-We now maintain a list of savepoints, and these savepoints can loaded
+at will, we can remove the restriction on which save points can be loaded.
+We now maintain a list of save points, and these save points can loaded
 in any order and multiple times, at will, without any restrictions.
 
 More formally, we capture this notion with the
@@ -889,7 +889,7 @@ and advance each forked timeline at will.
 In this section, we model these kinds of restriction on time travel,
 and compare how they relate to each other.
 
-\subsection{Modelling Restrictions}
+\subsection{Modeling Restrictions}
 
 The first kind of restriction is on the \emph{position} where an
 adversary can fork.
@@ -1044,7 +1044,7 @@ which they are unable to do in $\text{Fork}(P, d)(\mathcal{E}_b)$.
 $\blacksquare$
 
 \begin{claim}
-    \label{claim:P-is-stronger}
+    \label{claim:d-is-stronger}
     For all $P$ with $\text{min}(P) \in \text{poly}(\lambda)$\footnote{This condition means that there exists an element in $P$ bounded by a polynomial in $\lambda$, so that $P$ isn't effectively empty.},
     if $d' > d$, and ${d' \in \text{poly}(\lambda)}$, then there exists a
     game $\mathcal{E}_b$ and adversary $\mathcal{A}$ such that 
@@ -1136,7 +1136,7 @@ games, time travel provides no advantage.
 
 Then, we look at more concrete results, showing that while $\text{IND-CCA}$
 encryption is broken against time travel, $\text{IND-CPA}$ encryption
-remain secure.
+remains secure.
 We also investigate signatures, showing that the $\text{EUF-CMA}$
 game is broken against time travel, but that $\text{UUF-CMA}$ remains secure.
 
@@ -1407,8 +1407,8 @@ even prove that a separation exists without any cryptographic assumptions.
 In this work, we've considered standalone security, using games.
 Further work might extend models of travel to work with
 simulation based security, or even universally composable security \cite{can01}.
-Unfortunately, we expect that modelling time travel in a concurrent setting will prove
-substantially more difficult than modelling it in the standalone setting.
+Unfortunately, we expect that modeling time travel in a concurrent setting will prove
+substantially more difficult than modeling it in the standalone setting.
 On the other hand, this model would more likely match realistic deployments
 of time machines.
 
@@ -1421,7 +1421,7 @@ allowing us to represent all security games using a common interface.
 We then defined various models of time travel as transformations over
 abstract games.
 We showed that these models formed a hierarchy, with backwards
-time travel more powerful than no time travel, and the addition
+time travel being more powerful than no time travel, and the addition
 of forwards time travel being even more powerful.
 
 We also looked at the concrete effects of our models of time travel
