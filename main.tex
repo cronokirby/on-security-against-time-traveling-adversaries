@@ -1075,6 +1075,7 @@ In $\text{IND-CCA}$, the adversary additionally has access to an oracle
 allowing them to make decrypt ciphertexts of their choice.
 Crucially, the adversary is \emph{not} allowed to decrypt any ciphertexts
 produced by querying the challenge.
+
 Both of these games are formally presented in the appendix, as
 Game \ref{game:ind-cpa} and Game \ref{game:ind-cca}, respectively.
 
@@ -1088,7 +1089,10 @@ been produced, and then use the decryption oracle to formally win.
 \begin{claim}
 \label{claim:ind-cca-broken}
 Given any encryption scheme $\mathcal{E} = (\mathcal{K}, \mathcal{M}, \mathcal{C}, E, D)$, and message $m \in \mathcal{M}$, there exists a an adversary
-$\mathcal{A}$, such that $\epsilon(\mathcal{A} \circ \text{Rewind-1}(\text{IND-CCA}_b(\mathcal{E}))) = 1 - |\mathcal{M}(|m|)|^{-1}$
+$\mathcal{A}$, such that:
+$$
+\epsilon(\mathcal{A} \circ \text{Rewind-1}(\text{IND-CCA}_b(\mathcal{E}))) = 1 - |\mathcal{M}(|m|)|^{-1}
+$$
 where $|\mathcal{M}(|m|)|$ denotes the number of messages with the same length as $m$.
 \end{claim}
 
@@ -1138,7 +1142,77 @@ $\blacksquare$
 \subsection{On Signatures}
 
 Next, we consider the security of signatures.
-\cite{gmr88}
+One common family of security games for signatures is that of
+$*\text{UF-CMA}$ \cite{gmr88}.
+In this family, the adversary has access to an oracles which can
+sign messages, and they attempt to create a forged signature on a message.
+The difference between the games lies in which messages the adversary
+needs to forge a signature for.
+
+In $\text{UUF-CMA}$, the game chooses a random message $m$, and the adversary
+must forge a signature for $m$.
+Naturally, the adversary is not allowed to use the signing oracle on
+$m$.
+
+In $\text{EUF-CMA}$, the adversary can forge a signature for any message
+of their choice, so long as they didn't use that message
+with the signing oracle.
+
+Both of these games are formally presented in the appendix,
+as Game \ref{game:uuf-cma} and Game \ref{game:euf-cma}, respectively.
+
+In $\text{EUF-CMA}$, the game needs to keep track of which messages
+it has signed for the adversary.
+This book-keeping is what allows the game to be broken by time-travel.
+An adversary can sign a message of their choice, and then rewind time
+to make the game forget that it ever signed that message.
+
+\begin{claim}
+\label{claim:euf-cma}
+Given any signature scheme
+$\mathcal{S} = (\mathcal{PK}, \mathcal{SK}, \mathcal{M}, \mathcal{C}, \Sigma, \text{Gen}, \text{Sign}, \text{Verify})$, and message $m \in \mathcal{M}$,
+there exists an adversary $\mathcal{A}$ such that:
+$$
+\epsilon(\mathcal{A} \circ \text{Rewind-1}(\text{EUF-CMA}_b(\mathcal{S}))) = 1
+$$
+\end{claim}
+The idea is that the adversary can obtain a signature for $m$
+via the oracle $\texttt{Sign}$, and then rewind time to make the game
+forget that it signed this message, allowing it to query $\texttt{Win}$.
+
+More formally, the following strategy always succeeds:
+$$
+\begin{aligned}
+&\sigma \gets \texttt{Sign}(m)\cr
+&\texttt{Rewind}()\cr
+&\texttt{return } \texttt{Win}(m, \sigma)\cr
+\end{aligned}
+$$
+
+By the correctness property for signatures, the $\sigma$ returned
+by $\texttt{Sign}$ will successfully verify.
+Additionally, after $\texttt{Rewind}()$, the set $\text{signed}$
+will be empty, allowing the adversary to successfully query $\texttt{Win}$.
+
+$\blacksquare$
+
+On the other hand, $\text{UUF-CMA}$ remains secure.
+This is because the message $m$ that the adversary needs to sign
+is fixed after initializing the game, which means that time travel
+doesn't help, because no state is modified in the game.
+
+
+\begin{claim}
+\label{claim:uuf-cpa-secure}
+For any signature scheme $\mathcal{S}$,
+$\text{Fork}(\text{UUF-CMA}(\mathcal{S})) \leq \text{UUF-CMA}(\mathcal{S})$.
+\end{claim}
+
+Looking at the definition in Game \ref{game:uuf-cma}, it's clear
+that the associated abstract game is $\emph{stateless}$.
+We can thus apply Claim \ref{claim:stateless-games} to obtain our result.
+
+$\blacksquare$
 
 \section{Further Work}
 
