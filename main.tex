@@ -1137,6 +1137,9 @@ $\blacksquare$
 
 \subsection{On Signatures}
 
+Next, we consider the security of signatures.
+\cite{gmr88}
+
 \section{Further Work}
 
 \section{Conclusion}
@@ -1154,6 +1157,13 @@ An encryption scheme $\mathcal{E}$ consists of types $\mathcal{K}, \mathcal{M}, 
 along with functions $E : \mathcal{K} \times \mathcal{M} \xleftarrow{R} \mathcal{C}$ and $D : \mathcal{K} \times \mathcal{C} \to \mathcal{M}$.
 By $\mathcal{M}(|m|)$ we denote the distribution of messages with the same
 length as $m$.
+
+The encryption scheme must satisfy a correctness property:
+$$
+\forall k \in \mathcal{K},\ m \in \mathcal{M}.\ P[D(E(k, m)) = m] = 1
+$$
+Encrypting and then decrypting a message should return that same message.
+
 The security of an encryption scheme can be captured by one of the following
 two games:
 
@@ -1209,6 +1219,83 @@ $$
 $$
 \caption{$\text{IND-CCA}_b$}
 \label{game:ind-cca}
+\end{game}
+
+\subsection{Signatures}
+A signature scheme $\mathcal{S}$ consists of types $\mathcal{PK}, \mathcal{SK}, \mathcal{M}, \mathcal{C}, \Sigma$,
+along with functions:
+$$
+\begin{aligned}
+&\text{Gen} : () \xrightarrow{R} \mathcal{SK} \times \mathcal{PK}\cr
+&\text{Sign} : \mathcal{SK} \times \mathcal{M} \xrightarrow{R} \Sigma\cr
+&\text{Verify} : \mathcal{PK} \times \mathcal{M} \times \Sigma \to \{0, 1\}\cr
+\end{aligned}
+$$
+
+For correctness, we require that all signatures produced with a given
+key will successfully verify.
+More formally, for any message $m$, the following procedure always succeeds:
+$$
+\begin{aligned}
+&(\text{sk}, \text{pk}) \xleftarrow{R} \text{Gen}()\cr
+&\sigma \gets \text{Sign}(\text{sk}, m)\cr
+&\texttt{return } \text{Verify}(\text{pk}, m, \sigma)\cr
+\end{aligned}
+$$
+
+We consider two notions of security for signature schemes:
+$\text{UUF-CMA}$ and $\text{EUF-CMA}$, with the former being weaker.
+
+\begin{game}
+\captionsetup{justification=centering}
+$$
+\boxed{
+\begin{aligned}
+&\colorbox{pink}{\large $\text{UUF-CMA}_b$}\cr
+&\begin{aligned}
+    &(\text{sk}, \text{pk}) \xleftarrow{R} \text{Gen}()\cr
+    &m \xleftarrow{R} \mathcal{M}\cr
+    &\underline{\texttt{Win}(\sigma):}\cr
+    &\ \texttt{assert } \text{Verify}(\text{pk}, m, \sigma)\cr
+    &\ \texttt{return } b\cr
+\end{aligned}
+&\begin{aligned}
+    &\underline{\texttt{Challenge}()}\cr
+    &\ \texttt{return } m\cr
+    &\underline{\texttt{Sign}(\hat{m}):}\cr
+    &\ \texttt{assert } \hat{m} \neq m\cr
+    &\ \texttt{return } \text{Sign}(\text{sk}, \hat{m})\cr
+\end{aligned}\cr
+\end{aligned}
+}
+$$
+\caption{$\text{UUF-CMA}_b$}
+\label{game:uuf-cma}
+\end{game}
+\begin{game}
+\captionsetup{justification=centering}
+$$
+\boxed{
+\begin{aligned}
+&\colorbox{pink}{\large $\text{EUF-CMA}_b$}\cr
+&(\text{sk}, \text{pk}) \xleftarrow{R} \text{Gen}()\cr
+&\text{signed} \gets \emptyset\cr
+&\begin{aligned}
+    &\underline{\texttt{Win}(m, \sigma):}\cr
+    &\ \texttt{assert } m \notin \text{signed}\cr
+    &\ \texttt{assert } \text{Verify}(\text{pk}, m, \sigma)\cr
+    &\ \texttt{return } b\cr
+\end{aligned}
+&\begin{aligned}
+    &\underline{\texttt{Sign}(m):}\cr
+    &\ \text{signed} \gets \text{signed} \cup \{m\}\cr
+    &\ \texttt{return } \text{Sign}(\text{sk}, m)\cr
+\end{aligned}\cr
+\end{aligned}
+}
+$$
+\caption{$\text{EUF-CMA}_b$}
+\label{game:euf-cma}
 \end{game}
 
 \end{document}
