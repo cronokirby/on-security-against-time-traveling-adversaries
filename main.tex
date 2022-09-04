@@ -62,12 +62,12 @@ a message by presenting them with a signature that they will create
 in the future.
 
 Beyond investigating concrete breakages of certain schemes,
-we also present a fine grained analysis of different models.
+we also present a fine grained analysis of different models of time travel.
 We consider several variations of time travel, and show how they
-form a hierarchy, with some models of time travel strictly more powerful
+form a hierarchy, with some models strictly more powerful
 than others.
 In particular, the ability to travel backwards is more powerful
-than no time travel at all, and being able to move both forwards and
+than no time travel at all, and being able to travel both forwards and
 backwards is even more powerful.
 
 We also consider restrictions on which points in time the adversary
@@ -77,8 +77,8 @@ showing that these restrictions are strictly weaker.
 \subsection{Relevance of Time Travel}
 
 Given that time machines are mainly a subject of science fiction,
-the notion of time travel might seem irrelevant in practice to
-cryptography.
+the notion of time travel might seem irrelevant to
+cryptography in practice.
 We think that this might not be the case.
 
 One notion similar to that of time travel is ``resettable encryption'' \cite{yil09}.
@@ -154,7 +154,7 @@ of time travel.
 By having an abstract game, we can more easily define what it means to augment
 an adversary with the ability to travel through time, and we can more easily
 compare the differences between models of time travel across \emph{all}
-games, rather than for just a particular cryptographic scheme.
+games, rather than just for a particular cryptographic scheme.
 
 \subsection{State-Separable Proofs}
 
@@ -175,8 +175,8 @@ These imported functions are just ``placeholders'', with no semantics.
 For them to have meaning, the package needs to be \emph{linked} with another package.
 If $A$ and $B$ are packages such that $\text{in}(A) \subseteq \text{out}(B)$,
 then we can define the composition package $A \circ B$.
-The exports are that of $A$, with $\text{out}(A \circ B) = \text{out}(A)$,
-and the imports that of $B$, with $\text{in}(A \circ B) = \text{in}(B)$.
+The exports are those of $A$, with $\text{out}(A \circ B) = \text{out}(A)$,
+and the imports are those of $B$, with $\text{in}(A \circ B) = \text{in}(B)$.
 This package is implemented by merging the states of $A$ and $B$, and replacing
 calls to the functions in $\text{in}(A)$ with the functionality defined in $B$.
 
@@ -227,10 +227,10 @@ and maintain a different kind of state.
 This is very useful, since it allows us to capture various cryptographic schemes
 and notions of security.
 However, in order to easily model the impacts of time travel on various games,
-we would rather work with a \emph{single} interface, capable of capturing the behavior
-of various games and their notions of security.
+we would rather work with a \emph{single} interface, capable of capturing
+the behavior of all of these games.
 
-The key observation here is that the state of a pair of game is modified in only two places:
+The key observation here is that the state of a game is modified in only two places:
 
 \begin{enumerate}
     \item When the state is initialized.
@@ -307,7 +307,7 @@ to ``partially'' undo the effects of an interaction, by rewinding
 an interaction before its completion.
 The reason we disallow this is because we assume the adversary has
 no other channels to learn about the state of the game beyond the
-information it gets from querying its exported functions.
+information they get from querying its exported functions.
 An adversary thus has no way of knowing where they need to time hop
 in order to partially undo an interaction, so we can make the simplifying
 assumption that all interactions are \emph{atomic}, and time is discrete.
@@ -360,8 +360,8 @@ $s_0, s_1, \ldots$, as well as a position in this sequence, $i$.
 
 The $\texttt{Rewind}$ function is the additional capability here,
 and allows the adversary to move backwards by one step in time.
-This essentially models a very limited time machine, only
-allowing a small backwards movement in time.
+This models a very limited time machine which can only
+make small backwards movements in time.
 
 Our first question is: does this limited model of time travel help
 the adversary?
@@ -370,7 +370,6 @@ than an adversary without it?
 One way of capturing this notion of power would be to demonstrate
 a game $\mathcal{E}_b$ which is \emph{secure}, but where
 $\text{Rewind-1}(\mathcal{E}_b)$ is broken.
-In fact, we can do this:
 
 \begin{claim}
     \label{claim:rewind-1-is-stronger}
@@ -406,10 +405,9 @@ $$
 \end{game}
 
 In this game, we have two random keys $k_0, k_1$.
-The game lets the adversary choose to learn one of the keys, but not
+The game lets the adversary learn one key of their choice, but not
 the other.
-If the adversary manages to guess both of the keys, then they'll be
-able to learn the value of $b$.
+If the adversary manages to guess both of the keys, then they learn the value of $b$.
 
 Now, because $k_\sigma$ has $\lambda$ bits, an adversary won't be able
 to randomly guess its value.
@@ -419,7 +417,6 @@ This means that $\mathcal{E}_b$ is secure.
 
 On the other hand, $\text{Rewind-1}(\mathcal{E}_b)$ is already broken.
 The following strategy will always succeed:
-
 $$
 \begin{aligned}
 &k_0 \gets \texttt{Query}(0)\cr
@@ -429,7 +426,6 @@ $$
 &\texttt{return } b\cr
 \end{aligned}
 $$
-
 Even though the adversary prevents us from querying more than once,
 a single rewinding step is enough to undo our query, and thus learn
 the other key.
@@ -959,8 +955,8 @@ arbitrary progression.
 
 \subsection{Comparing Restrictions}
 
-$\text{Fork}(P, d)$ is actually equivalent to not having access
-to time travel for certain parameters.
+For certain parameters, $\text{Fork}(P, d)$ is actually equivalent to not having access
+to time travel.
 If $P = \emptyset$, or $d = 0$, then forking becomes
 impossible.
 This means that $\text{Fork}(\emptyset, d) = \text{Fork}(\emptyset, d')$,
@@ -1008,7 +1004,7 @@ Increasing $P$ and $d$ yields a strictly stronger adversary.
 \end{claim}
 
 The basic idea of the proof is that we engineer a game which requires
-the adversary to fork at a position in $P'$, but not $P$, which demonstrates
+the adversary to fork at a position in $P' / P$, which demonstrates
 the separation.
 
 Given $p \in P' / P$, we can construct the following game:
@@ -1099,18 +1095,18 @@ $$
 &\texttt{Wait}()\ p \text{ times}\cr
 &\texttt{Fork}()\cr
 &\texttt{Query}(0)\cr
-&k_0 \gets \texttt{Wait}()\ (d' - 1) \text{ times}\cr
-&\texttt{Load}(0)\cr
+&k_0 \gets \texttt{Wait}()\ d' \text{ times}\cr
+&\texttt{Load}(1)\cr
 &\texttt{Query}(1)\cr
-&k_1 \gets \texttt{Wait}()\ (d' - 1) \text{ times}\cr
+&k_1 \gets \texttt{Wait}()\ d' \text{ times}\cr
+&\texttt{Load}(1)\cr
 &b \gets \texttt{Guess}(k_0, k_1)\cr
 &\texttt{return } b\cr
 \end{aligned}
 $$
 
 Notably, this strategy requires a forking depth of at least $d'$,
-in order to be able to make the queries to $\texttt{Wait}$,
-and the final query to $\texttt{Guess}$.
+in order to be able to make the queries to $\texttt{Wait}$.
 One subtlety is that we need to wait at the start of the game in order
 to advance the state $p$ times, at which point we're allowed to fork,
 since $p \in P$.
@@ -1131,10 +1127,10 @@ $\blacksquare$
 In this section, we explore the impacts of time travel on various
 cryptographic schemes.
 
-First, we look at some general results, namely that for \emph{stateless}
+First, we prove a general result, namely that for \emph{stateless}
 games, time travel provides no advantage.
 
-Then, we look at more concrete results, showing that while $\text{IND-CCA}$
+Then, we show a few more concrete results, in particular that while $\text{IND-CCA}$
 encryption is broken against time travel, $\text{IND-CPA}$ encryption
 remains secure.
 We also investigate signatures, showing that the $\text{EUF-CMA}$
@@ -1142,7 +1138,7 @@ game is broken against time travel, but that $\text{UUF-CMA}$ remains secure.
 
 \subsection{Stateless Schemes Remain Secure}
 
-So far, we've shown that two models of time travel, $\text{Rewind-1}$
+So far, we've shown that two models of time travel, $\text{Rewind-1}$,
 and $\text{Fork}$ provide strictly stronger capabilities.
 The separation in both cases relied on the adversary being able to
 ``undo'' certain checks made inside of the game.
@@ -1234,17 +1230,19 @@ One very common notion of security for encryption schemes is
 that of $\text{IND-CCA}$ security \cite{ny90}.
 In the $\text{IND}$ family of games, the adversary can present
 the challenger with a message of their choice, receiving
-back either the encryption of that message, or a random message
+either the encryption of that message, or a random message
 \footnote{We use the ``real or random'' variant of $\text{IND}$, rather than the ``left or right'' variant, since the former is easier to use with state-separable proofs.}.
+We call this ciphertext a \emph{challenge}.
 The difference between the variants $\text{IND}$, $\text{IND-CPA}$, and $\text{IND-CCA}$
 lies in what additional oracles the adversary has access to.
 
 In $\text{IND-CPA}$, the adversary has access to an oracle which lets them
 receive encryptions of messages of their choice.
 In $\text{IND-CCA}$, the adversary additionally has access to an oracle
-allowing them to make decrypt ciphertexts of their choice.
-Crucially, the adversary is \emph{not} allowed to decrypt any ciphertexts
-produced by querying the challenge.
+allowing them to decrypt ciphertexts of their choice.
+Crucially, the adversary is \emph{not} allowed to decrypt any
+challenge ciphertexts.
+
 
 Both of these games are formally presented in the appendix, as
 Game \ref{game:ind-cpa} and Game \ref{game:ind-cca}, respectively.
@@ -1313,7 +1311,7 @@ $\blacksquare$
 Next, we consider the security of signatures.
 One common family of security games for signatures is that of
 $*\text{UF-CMA}$ \cite{gmr88}.
-In this family, the adversary has access to an oracles which can
+In this family, the adversary has access to an oracle which can
 sign messages, and they attempt to create a forged signature on a message.
 The difference between the games lies in which messages the adversary
 needs to forge a signature for.
