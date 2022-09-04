@@ -14,7 +14,7 @@
     In this work, we investigate the notion of time travel, formally defining a model for adversaries
     equipped with a time machine, and exploring the consequences
     for cryptography.
-    We find that being able to rewind time allows breaking some
+    We find that being able to rewind time breaks some
     cryptographic schemes, and being able to freely move both
     forwards and backwards in time breaks even more schemes.
 
@@ -31,7 +31,7 @@ against adversaries equipped with a computer, so long as they're
 bounded in the amount of computation they can do.
 Post-quantum cryptography additionally provides adversaries
 with a \emph{quantum} computer.
-This is enough to break many existing schemes, but it is possible to
+While this is enough to break many existing schemes, it is nonetheless possible to
 design cryptography which can resist quantum attacks.
 
 If time machines were possible, could they help an adversary break
@@ -42,7 +42,7 @@ We investigate these questions in this work.
 We consider the ``intuitive'' notion of time travel that one might
 encounter in various works of science fiction.
 An adversary has a time machine which allows them to jump through
-time, rewinding time backwards, and skipping time forwards.
+time, rewinding time backwards, or skipping time forwards.
 Crucially, the adversary is still bounded in the computation
 they can do, including the amount of time travel.
 From their perspective, they still run in polynomial time.
@@ -132,7 +132,7 @@ with some models strictly more powerful than others.
 
 In Section \ref{sec:restriction}, we consider the effects
 of restrictions on the positions where an adversary can create forked
-timelines, and on the depth of each timeline, showing that restrictions
+timelines, and on the depth of each timeline, showing that these restrictions
 create strictly weaker capabilities.
 
 In Section \ref{sec:effect}, we investigate the effect of time
@@ -141,7 +141,7 @@ We find that schemes whose security can be captured by a \emph{stateless}
 game are unaffected by time travel, including $\text{IND-CPA}$
 security for encryption, and $\text{UUF-CMA}$ security for signatures.
 On the other hand, both the $\text{IND-CCA}$ and $\text{EUF-CMA}$ games
-are broken, even in the weakest model of time travel.
+are broken, even in our weakest model of time travel.
 
 \section{Defining Abstract Games}
 \label{sec:abstract-game}
@@ -199,14 +199,14 @@ $$
 \epsilon(\mathcal{A} \circ G_b) := \left|P[1 \gets \texttt{guess}()\ |\ b = 0] - P[1 \gets \texttt{guess}() \ |\ b = 1]\right|
 $$
 
-Given we a pair of games $G_0, G_1$, we say that they are:
+Given a pair of games $G_0, G_1$, we say that they are:
 
 \begin{itemize}
     \item \emph{equal}, denoted by $G_0 = G_1$, when $\epsilon(\mathcal{A} \circ G_b) = 0$ for any adversary, even unbounded.
     \item \emph{indistinguishable}, denoted by $G_0 \approx G_1$, when $\epsilon(\mathcal{A} \circ G_b)$ is a negligible function of $\lambda$, for any \emph{efficient} adversary (in $\lambda$).
 \end{itemize}
 
-The security of a cryptographic scheme is defined by a pair of games $G_b$.
+The security of a cryptographic scheme is captured by a pair of games $G_b$.
 We say that the scheme is \emph{secure} if $G_0 \approx G_1$.
 
 For reductions, given game pairs $G_b$ and $H_b^1, \ldots, H_b^N$,
