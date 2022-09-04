@@ -12,13 +12,13 @@
     \noindent If you had a time machine, what cryptography would you be able to break?
 
     In this work, we investigate the of notion time travel, formally defining a model for adversaries
-    equipped with a time machine, and the subsequent consequences
-    on cryptography.
+    equipped with a time machine, and exploring the consequences
+    for cryptography.
     We find that being able to rewind time allows breaking some
     cryptographic schemes, and being able to freely move both
     forwards and backwards in time breaks even more schemes.
 
-    We look at the impacts of time travel on encryption and signatures,
+    We look at the impacts of time travel on encryption and signatures in particular,
     finding that the $\text{IND-CCA}$ and $\text{EUF-CMA}$ security
     games are broken, while $\text{IND-CPA}$ and $\text{UUF-CMA}$
     remain secure.
@@ -31,8 +31,8 @@ against adversaries equipped with a computer, so long as they're
 bounded in the amount of computation they can do.
 Post-quantum cryptography additionally provides adversaries
 with a \emph{quantum} computer.
-This is enough to break many schemes, and yet it's possible to
-design cryptography which resists quantum attacks.
+This is enough to break many existing schemes, but it is possible to
+design cryptography which can resist quantum attacks.
 
 If time machines were possible, could they help an adversary break
 certain cryptographic schemes? Can we design cryptograpy which
@@ -43,18 +43,21 @@ We consider the ``intuitive'' notion of time travel that one might
 encounter in various works of science fiction.
 An adversary has a time machine which allows them to jump through
 time, rewinding time backwards, and skipping time forwards.
+Crucially, the adversary is still bounded in the computation
+they can do, including the amount of time travel.
+From their perspective, they still run in polynomial time.
 
 This capability allows the adversary to break certain schemes,
 because they're able to get around various checks made in security games.
 For example, in the \text{EUF-CMA} game, the adversary has access to an
 oracle allowing them to sign any message of their choice.
-The adversary wins by producing a forgery for a new message, one
+The adversary wins by producing a forgery for a new message, 
 that hasn't been signed by the oracle.
 Time travel enables an adversary to trivially break this game
-by querying the oracle, and then traveling backwards in time, to
+by querying the oracle, then traveling backwards in time, to
 a point where no messages have yet been signed, and then presenting
 their signature as a valid forgery.
-Intuitively, this is like convincing someone that they've signed
+Intuitively, this is akin to convincing someone that they've signed
 a message by presenting them with a signature that they will create
 in the future.
 
@@ -68,20 +71,20 @@ than no time travel at all, and being able to move both forwards and
 backwards is even more powerful.
 
 We also consider restrictions on which points in time the adversary
-can travel, and how deep they can travel in forked timelines,
+can travel to, and how deep they can travel in forked timelines,
 showing that these restrictions are strictly weaker.
 
 \subsection{Relevance of Time Travel}
 
 Given that time machines are mainly a subject of science fiction,
-the notion of time travel might seem practically irrelevant to
+the notion of time travel might seem irrelevant in practice to
 cryptography.
-We think this that might not be the case.
+We think that this might not be the case.
 
 One notion similar to that of time travel is ``resettable encryption'' \cite{yil09}.
 In this work, they consider a cryptographic system deployed on a virtual machine.
 Because the adversary has the ability to reset the state of the virtual machine,
-the system needs to satisfy a higher level of encryption, in order to withstand
+the system needs to satisfy a higher level of security, in order to withstand
 attacks using this resetting functionality.
 From the perspective of the system, the adversary effectively has the ability
 to time travel, by rewinding the state backwards in time.
@@ -94,7 +97,7 @@ tricking devices into rewinding their system clocks backwards in time.
 For example, an attack by Iovino et al. \cite{ivv20} used this
 clock corruption in order to attack digital contact tracing systems.
 From the perspective of the system under attack, clock rewinding
-adversaries are effectively time traveling adversaries.
+adversaries are effectively traveling backwards in time.
 Thus, our exploration of time travel might be relevant to practical
 systems whose security depends on a clock.
 
@@ -119,10 +122,10 @@ in this work.
 \subsection{Overview}
 
 In Section \ref{sec:abstract-game}, we revisit the notion of standalone security, and define
-the notion of \emph{abstract game}, which allows us to encapsulate
+the notion of \emph{abstract games}, which allow us to encapsulate
 security games under a common interface.
 
-In Section \ref{sec:model} We then use this notion to define various models of time travel as
+In Section \ref{sec:model} we then use this notion to define various models of time travel as
 transformations of abstract games.
 We compare these various models, showing that they form a hierarchy,
 with some models strictly more powerful than others.
@@ -159,14 +162,14 @@ But first, we need a basic notion of standalone security.
 For this, we lean on the framework of \emph{state-separable proofs}
 \cite{bdfkk18, mei22}.
 
-In this framework, you start with \emph{packages}.
+The basic component of this framework is the \emph{package}.
 A package $P$ is defined by its code.
-This codes describes how to initialize the state of the package, 
+This code describes how to initialize the state of the package, 
 and what functions the package exports.
-These exported functions are denoted by the set $\text{out}(P)$.
+This set of exported functions is denoted by $\text{out}(P)$.
 Each of these functions can accept input, produce output, and read and write
 to the internal state of the package.
-Packages may also have a set of imported functions, denoted by $\text{in}(P)$.
+Packages also have a set of imported functions, denoted by $\text{in}(P)$.
 
 These imported functions are just ``placeholders'', with no semantics.
 For them to have meaning, the package needs to be \emph{linked} with another package.
@@ -182,7 +185,7 @@ $\text{in}(G) = \emptyset$.
 
 An \emph{adversary} $\mathcal{A}$ is a package with $\text{out}(\mathcal{A}) = \{\texttt{guess}\}$.
 The function $\texttt{guess}$ takes no input, and returns a single bit $\hat{b}$.
-This bit represents the adversary's guess as to which of two games it's playing.
+This bit represents the adversary's guess as to which of two games they're playing.
 Furthermore, if the function $\texttt{guess}$ has a time complexity polynomial
 in a security parameter $\lambda$, we say that the adversary is \emph{efficient}.
 Most commonly, we assume that all adversaries are efficient, unless we explicitly
@@ -192,7 +195,6 @@ By linking an adversary with a game, we get a package $\mathcal{A} \circ G$
 with no imports, and a single export $\texttt{guess}$.
 This allows us to define the advantage of an adversary $\mathcal{A}$
 in distinguishing two games $G_0, G_1$, via the formula:
-
 $$
 \epsilon(\mathcal{A} \circ G_b) := \left|P[1 \gets \texttt{guess}()\ |\ b = 0] - P[1 \gets \texttt{guess}() \ |\ b = 1]\right|
 $$
@@ -209,14 +211,11 @@ We say that the scheme is \emph{secure} if $G_0 \approx G_1$.
 
 For reductions, given game pairs $G_b$ and $H_b^1, \ldots, H_b^N$,
 and a function $p$, we write:
-
 $$
 G_b \leq p(H_b^1, \ldots, H_b^n)
 $$
-
-If for any efficient adversary $\mathcal{A}$ against $G_b$, there exists efficient
+if for any efficient adversary $\mathcal{A}$ against $G_b$, there exists efficient
 adversaries $\mathcal{B}_1, \ldots, \mathcal{B}_n$ such that:
-
 $$
 \epsilon(\mathcal{A} \circ G_b) \leq p(\epsilon(\mathcal{B}_1 \circ H_b^1), \ldots, \epsilon(\mathcal{B}_n \circ H_b^n))
 $$
@@ -337,13 +336,13 @@ $$
 &i \gets 0\cr
 &\begin{aligned}
     &\underline{\mathcal{O}(x):}\cr
-    &s_{i + 1}, y \gets \texttt{next}_b(s_i, x)\cr
-    &\texttt{return } y\cr
+    &\ s_{i + 1}, y \gets \texttt{next}_b(s_i, x)\cr
+    &\ \texttt{return } y\cr
 \end{aligned}
 &\begin{aligned}
     &\underline{\texttt{Rewind}():}\cr
-    &\texttt{assert } i > 0\cr
-    &i \gets i - 1\cr
+    &\ \texttt{assert } i > 0\cr
+    &\ i \gets i - 1\cr
 \end{aligned}\cr
 \end{aligned}
 }
@@ -367,7 +366,7 @@ allowing a small backwards movement in time.
 Our first question is: does this limited model of time travel help
 the adversary?
 In other words, is an adversary with this capability more powerful
-than adversary without it? 
+than an adversary without it? 
 One way of capturing this notion of power would be to demonstrate
 a game $\mathcal{E}_b$ which is \emph{secure}, but where
 $\text{Rewind-1}(\mathcal{E}_b)$ is broken.
@@ -391,14 +390,14 @@ $$
 &\text{queried} \gets 0\cr
 &\begin{aligned}
     &\underline{\texttt{Query}(\sigma):}\cr
-    &\texttt{assert } \text{queried} = 0\cr
-    &\text{queried} \gets 1\cr
-    &\texttt{return } k_\sigma\cr
+    &\ \texttt{assert } \text{queried} = 0\cr
+    &\ \text{queried} \gets 1\cr
+    &\ \texttt{return } k_\sigma\cr
 \end{aligned}
 &\begin{aligned}
     &\underline{\texttt{Guess}(\hat{k}_0, \hat{k}_1):}\cr
-    &\texttt{assert } \hat{k}_0 = k_0 \land \hat{k}_1 = k_1\cr
-    &\texttt{return } b\cr
+    &\ \texttt{assert } \hat{k}_0 = k_0 \land \hat{k}_1 = k_1\cr
+    &\ \texttt{return } b\cr
     &\cr
 \end{aligned}\cr
 \end{aligned}
@@ -454,13 +453,13 @@ $$
 &i \gets 0\cr
 &\begin{aligned}
     &\underline{\mathcal{O}(x):}\cr
-    &s_{i + 1}, y \gets \texttt{next}_b(s_i, x)\cr
-    &\texttt{return } y\cr
+    &\ s_{i + 1}, y \gets \texttt{next}_b(s_i, x)\cr
+    &\ \texttt{return } y\cr
 \end{aligned}
 &\begin{aligned}
     &\underline{\texttt{Rewind}(j):}\cr
-    &\texttt{assert } i >= j\cr
-    &i \gets i - j\cr
+    &\ \texttt{assert } i >= j\cr
+    &\ i \gets i - j\cr
 \end{aligned}\cr
 \end{aligned}
 }
@@ -494,12 +493,12 @@ $$
 &\colorbox{pink}{\large $\Gamma$}\cr
 &\begin{aligned}
     &\underline{\mathcal{O}(x):}\cr
-    &\texttt{return } \texttt{super}.\mathcal{O}(x)\cr
+    &\ \texttt{return } \texttt{super}.\mathcal{O}(x)\cr
 \end{aligned}
 &\begin{aligned}
     &\underline{\texttt{Rewind}(j):}\cr
-    &\texttt{assert } i >= j\cr
-    &\texttt{super}.\texttt{Rewind}()\ j \text{ times }\cr
+    &\ \texttt{assert } i >= j\cr
+    &\ \texttt{super}.\texttt{Rewind}()\ j \text{ times }\cr
 \end{aligned}\cr
 \end{aligned}
 }
@@ -663,7 +662,7 @@ having to create a savepoint there in advance.
 In particular, they can choose how they rewind based on the results
 of interacting with the game.
 To accomodate this freedom, we can simply always make a savepoint,
-allowing us to rewind by loading multiples times in a row.
+allowing us to rewind by loading multiple times in a row.
 
 \textbf{Proof:}\\
 First, we show that $\text{Fork-Stack}(\mathcal{G}_b) \leq \text{Rewind-Many}(\mathcal{G}_b)$.
@@ -737,7 +736,7 @@ $$
 
 One subtlety is that in $\texttt{Rewind}$, we don't perform any assertions,
 whereas we'd usually check that $i > 0$.
-This isn't necessary because $\texttt{super}.Load$ will check that the stack
+This isn't necessary because $\texttt{super}.\texttt{Load}$ will check that the stack
 isn't empty, which performs this duty.
 
 $\blacksquare$
@@ -745,12 +744,12 @@ $\blacksquare$
 \subsubsection{Arbitrary Savepoints}
 
 In the $\text{Fork-Stack}$ model, the adversary is limited to only
-load the most recently created savepoint.
+loading the most recently created savepoint.
 As we proved in Claim \ref{claim:fork-stack-is-not-stronger}, this model
 gives no advantage over just being able to move backwards in time.
 
 In order to capture the ability to move both backwards and forwards
-at will, we can remove this restriction on which savepoints can be loaded.
+at will, we can remove the restriction on which savepoints can be loaded.
 We now maintain a list of savepoints, and these savepoints can loaded
 in any order and multiple times, at will, without any restrictions.
 
@@ -813,7 +812,6 @@ $$
     &k \xleftarrow{R} \mathcal{K}\cr
     &x \gets \bot\cr
     &\text{queried} \gets 0\cr
-    &\cr
     &\underline{\texttt{Win}(y):}\cr
     &\ \texttt{assert } x \neq \bot\cr
     &\ \texttt{assert } F(k, x) = y\cr
@@ -824,7 +822,6 @@ $$
     &\ \texttt{assert } \text{queried} = 0\cr
     &\ \text{queried} \gets 1\cr
     &\ \texttt{return } F(k, \hat{x})\cr
-    &\cr
     &\underline{\texttt{Input}():}\cr
     &\ \texttt{assert } \text{queried} = 0\cr
     &\ \text{queried} \gets 1\cr
@@ -845,7 +842,6 @@ the challenge input, but not both.
 
 This game is insecure against forking, as demonstrated by the following
 strategy for $\text{Fork}(\mathcal{E}_b)$:
-
 $$
 \begin{aligned}
 &x \gets \texttt{Input}()\cr
@@ -902,7 +898,7 @@ is indexed by $\mathbb{N}$.
 A natural restriction is to only allow the adversary to
 fork on a subset $P \subseteq \mathbb{N}$ of these states.
 For example, the adversary may only be allowed to fork on the initial
-state $s_0$, but not any other states.
+state $s_0$, but not on any other state.
 
 The second kind of restriction is on the \emph{depth} of the forks.
 In our model, the adversary is free to explore each fork to any depth.
@@ -924,7 +920,6 @@ $$
 &\begin{aligned}
     &s_0 \gets \texttt{init}_b()\cr
     &p_0 \gets 0\cr
-    &\text{forkable} \gets \{0\}\cr
     &c_0 \gets \infty\cr
     &i, j \gets 0\cr
     &\underline{\mathcal{O}(x):}\cr
@@ -959,7 +954,7 @@ in the set of allowed positions $P$.
 
 In order to restrict the depth of each fork, each fork is associated
 with a counter $c_i$, which decrements each time the state advances.
-The main timeline $c_0$, has the counter set to $\infty$, to allow
+The main timeline has its counter $c_0$ set to $\infty$, to allow
 arbitrary progression.
 
 \subsection{Comparing Restrictions}
@@ -969,7 +964,7 @@ to time travel for certain parameters.
 If $P = \emptyset$, or $d = 0$, then forking becomes
 impossible.
 This means that $\text{Fork}(\emptyset, d) = \text{Fork}(\emptyset, d')$,
-and similarly for the other extreme values for $d$.
+and similarly for $d = 0$.
 
 In fact, an equivalent condition is that $P$ contains no elements
 in $\text{poly}(\lambda)$, i.e. bounded by a polynomial in the security
@@ -1137,14 +1132,13 @@ In this section, we explore the impacts of time travel on various
 crytographic schemes.
 
 First, we look at some general results, namely that for \emph{stateless}
-games, time travel provided no advantage.
+games, time travel provides no advantage.
 
 Then, we look at more concrete results, showing that while $\text{IND-CCA}$
 encryption is broken against time travel, $\text{IND-CPA}$ encryption
 remain secure.
-We also investigate signatures, showing that the $\text{EF-CMA}$
-game is broken against time travel, but that a slightly weaker notion
-of security remains secure.
+We also investigate signatures, showing that the $\text{EUF-CMA}$
+game is broken against time travel, but that $\text{UUF-CMA}$ remains secure.
 
 \subsection{Stateless Schemes Remain Secure}
 
@@ -1240,7 +1234,7 @@ One very common notion of security for encryption schemes is
 that of $\text{IND-CCA}$ security \cite{ny90}.
 In the $\text{IND}$ family of games, the adversary can present
 the challenger with a message of their choice, receiving
-back either the encryption of that message, or a random message.
+back either the encryption of that message, or a random message
 \footnote{We use the ``real or random'' variant of $\text{IND}$, rather than the ``left or right'' variant, since the former is easier to use with state-separable proofs.}.
 The difference between the variants $\text{IND}$, $\text{IND-CPA}$, and $\text{IND-CCA}$
 lies in what additional oracles the adversary has access to.
@@ -1260,7 +1254,7 @@ $\text{IND-CCA}$ game.
 Because the game keeps track of which challenge ciphertexts have been produced,
 disallowing decryption queries to those ciphertexts, the adversary
 can use time travel to make the game ``forget'' which challenges have
-been produced, and then use the decryption oracle to formally win.
+been produced, and then use the decryption oracle to win.
 
 \begin{claim}
 \label{claim:ind-cca-broken}
@@ -1287,7 +1281,6 @@ $$
 &
 \end{aligned}
 $$
-
 The adversary will be allowed to query $\text{Dec}$ with $c$,
 because the set of challenge ciphertexts is made empty by $\texttt{Rewind}$.
 Then, if $b = 0$, the adversary will return $0$, since the ciphertext
@@ -1339,7 +1332,7 @@ as Game \ref{game:uuf-cma} and Game \ref{game:euf-cma}, respectively.
 
 In $\text{EUF-CMA}$, the game needs to keep track of which messages
 it has signed for the adversary.
-This book-keeping is what allows the game to be broken by time-travel.
+This bookkeeping is what allows the game to be broken by time travel.
 An adversary can sign a message of their choice, and then rewind time
 to make the game forget that it ever signed that message.
 
@@ -1364,7 +1357,6 @@ $$
 &\texttt{return } \texttt{Win}(m, \sigma)\cr
 \end{aligned}
 $$
-
 By the correctness property for signatures, the $\sigma$ returned
 by $\texttt{Sign}$ will successfully verify.
 Additionally, after $\texttt{Rewind}()$, the set $\text{signed}$
@@ -1400,9 +1392,9 @@ along with restrictions for these models, we expect that further work
 might develop more powerful models, or more fine-grained restrictions.
 
 Another interesting line of work would be to investigate which classes
-of game make certain models of time-travel equivalent.
+of game make certain models of time travel equivalent.
 Similar to Claim \ref{claim:stateless-games} for stateless games,
-it might be possible that certain classes of games make
+it might be possible to show that certain classes of games make
 $\text{Fork}$ and $\text{Fork-Stack}$ equivalent, for example.
 
 In Claim \ref{claim:fork-is-strong}, we separated $\text{Fork}$
